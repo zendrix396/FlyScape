@@ -1,0 +1,286 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged, 
+  signInWithPopup,
+  getRedirectResult,
+  updateProfile,
+  sendPasswordResetEmail,
+  GoogleAuthProvider
+} from 'firebase/auth';
+import { doc, setDoc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { auth, googleProvider, db } from '../firebase/config';
+
+const AuthContext = createContext();
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+export function AuthProvider({ children }) {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Create user profile in Firestore
+  async function createUserProfile(uid, userData) {
+    try {
+      console.log("Creating user profile for:", uid);
+      const userDocRef = doc(db, 'users', uid);
+      
+      // Create base wallet with default balance
+      const newUserData = {
+        ...userData,
+        walletBalance: 50000,
+        createdAt: new Date().toISOString(),
+      };
+      
+      await setDoc(userDocRef, newUserData);
+      return newUserData;
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+      throw error;
+    }
+  }
+
+  // Fetch user profile from Firestore
+  async function getUserProfile(uid) {
+    try {
+      console.log("Fetching user profile for:", uid);
+      const userDocRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        return userDoc.data();
+      } else {
+        console.log("No user profile found");
+        return null;
+      }
+    } catch (error) {
+      console.error('Error getting user profile:', error);
+      return null;
+    }
+  }
+
+  // Sign up with email and password
+  async function signup(email, password, name) {
+    try {
+      console.log("Signing up with email:", email);
+      setError('');
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update profile with display name
+      await updateProfile(result.user, { displayName: name });
+      
+      // Create user profile in Firestore
+      await createUserProfile(result.user.uid, {
+        email,
+        displayName: name,
+        photoURL: result.user.photoURL || '',
+      });
+      
+      return result.user;
+    } catch (error) {
+      console.error("Signup error:", error.message);
+      setError(error.message);
+      throw error;
+    }
+  }
+
+  // Login with email and password
+  async function login(email, password) {
+    try {
+      console.log("Logging in with email:", email);
+      setError('');
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Fetch user profile
+      const profile = await getUserProfile(result.user.uid);
+      setUserProfile(profile);
+      
+      return result.user;
+    } catch (error) {
+      console.error("Login error:", error.message);
+      setError(error.message);
+      throw error;
+    }
+  }
+
+  // Login with Google
+  async function loginWithGoogle() {
+    try {
+      console.log("Initiating Google sign-in with popup");
+      setError('');
+      
+      // Use popup instead of redirect
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // Get the Google user
+      const user = result.user;
+      console.log("Google sign-in successful for:", user.email);
+      
+      // Check if user profile exists, if not create one
+      const profile = await getUserProfile(user.uid);
+      
+      if (!profile) {
+        console.log("Creating new profile for Google user");
+        await createUserProfile(user.uid, {
+          email: user.email,
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+        });
+      }
+      
+      return user;
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+      setError(`Google sign-in failed: ${error.message}`);
+      throw error;
+    }
+  }
+
+  // Logout
+  function logout() {
+    setUserProfile(null);
+    return signOut(auth);
+  }
+
+  // Reset password
+  async function resetPassword(email) {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setError('');
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    }
+  }
+
+  // Update user wallet balance
+  async function updateUserWallet(amount) {
+    if (!currentUser) return;
+    
+    try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      
+      // Ensure we always have the latest data
+      const userData = await getUserProfile(currentUser.uid);
+      
+      if (!userData) throw new Error('User profile not found');
+      
+      // Check if wallet or walletBalance is used
+      const walletField = userData.walletBalance !== undefined ? 'walletBalance' : 'wallet';
+      const currentBalance = userData[walletField] || 0;
+      
+      console.log("Current wallet balance:", currentBalance);
+      console.log("Amount to deduct:", amount);
+      
+      const newBalance = currentBalance - amount;
+      
+      if (newBalance < 0) throw new Error('Insufficient funds');
+      
+      // Update with the correct field name
+      await updateDoc(userDocRef, { [walletField]: newBalance });
+      
+      console.log("New wallet balance:", newBalance);
+      
+      // Update local state
+      setUserProfile(prev => ({
+        ...prev,
+        [walletField]: newBalance
+      }));
+      
+      return newBalance;
+    } catch (error) {
+      console.error('Error updating wallet:', error);
+      throw error;
+    }
+  }
+
+  // Check for redirect results on initial load
+  useEffect(() => {
+    const checkRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          console.log("Redirect result received for user:", result.user.email);
+          
+          // Check if user profile exists
+          const profile = await getUserProfile(result.user.uid);
+          
+          if (!profile) {
+            console.log("Creating profile for redirect user");
+            await createUserProfile(result.user.uid, {
+              email: result.user.email,
+              displayName: result.user.displayName || '',
+              photoURL: result.user.photoURL || '',
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error processing redirect result:", error);
+        setError(`Auth redirect failed: ${error.message}`);
+      }
+    };
+    
+    checkRedirectResult();
+  }, []);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    console.log("Setting up auth state listener");
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed:", user ? user.email : "No user");
+      setCurrentUser(user);
+      
+      if (user) {
+        try {
+          const profile = await getUserProfile(user.uid);
+          
+          // If no profile exists, create one
+          if (!profile) {
+            console.log("No profile found, creating one");
+            const newProfile = await createUserProfile(user.uid, {
+              email: user.email,
+              displayName: user.displayName || '',
+              photoURL: user.photoURL || '',
+            });
+            setUserProfile(newProfile);
+          } else {
+            setUserProfile(profile);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      } else {
+        setUserProfile(null);
+      }
+      
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const value = {
+    currentUser,
+    userProfile,
+    error,
+    loading,
+    login,
+    signup,
+    logout,
+    loginWithGoogle,
+    resetPassword,
+    updateUserWallet
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+} 
