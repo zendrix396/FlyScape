@@ -151,33 +151,99 @@ export default function Home() {
                 Popular Destinations
               </ScrollReveal>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
-                {[
-                  { name: 'Delhi', code: 'DEL', image: 'https://picsum.photos/seed/delhi/800/600' },
-                  { name: 'Mumbai', code: 'BOM', image: 'https://picsum.photos/seed/mumbai/800/600' },
-                  { name: 'Bangalore', code: 'BLR', image: 'https://picsum.photos/seed/bangalore/800/600' },
-                  { name: 'Goa', code: 'GOI', image: 'https://picsum.photos/seed/goa/800/600' },
-                ].map((destination, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all cursor-pointer border border-emerald-100"
-                  >
-                    <div 
-                      className="h-48 bg-cover bg-center" 
-                      style={{ 
-                        backgroundImage: `url(${destination.image})` 
-                      }}
-                    ></div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-emerald-800">{destination.name}</h3>
-                      <p className="text-emerald-600 text-sm">{destination.code}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <motion.div 
+                className="overflow-hidden"
+                whileTap={{ cursor: "grabbing" }}
+              >
+                <motion.div
+                  className="flex gap-6 px-4"
+                  drag="x"
+                  dragConstraints={{ left: -1000, right: 0 }}
+                  initial={{ x: 0 }}
+                  animate={{ x: 0 }}
+                  transition={{
+                    x: {
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                      repeat: Infinity,
+                      repeatType: "mirror",
+                      repeatDelay: 5,
+                      duration: 30
+                    }
+                  }}
+                >
+                  {[
+                    { 
+                      name: 'Delhi', 
+                      code: 'DEL', 
+                      image: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      description: 'Explore India\'s vibrant capital'
+                    },
+                    { 
+                      name: 'Mumbai', 
+                      code: 'BOM', 
+                      image: 'https://images.unsplash.com/photo-1567157577867-05ccb1388e66?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      description: 'Gateway to India\'s financial hub'
+                    },
+                    { 
+                      name: 'Bangalore', 
+                      code: 'BLR', 
+                      image: 'https://images.unsplash.com/photo-1580009472549-1b5f422e3955?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      description: 'India\'s Silicon Valley'
+                    },
+                    { 
+                      name: 'Goa', 
+                      code: 'GOI', 
+                      image: 'https://images.unsplash.com/photo-1587922546541-5f5a5c59767b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      description: 'Beach paradise on the Arabian Sea'
+                    },
+                    { 
+                      name: 'Dubai', 
+                      code: 'DXB', 
+                      image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      description: 'City of luxury and innovation'
+                    },
+                    { 
+                      name: 'Singapore', 
+                      code: 'SIN', 
+                      image: 'https://images.unsplash.com/photo-1565967511849-76a60a516170?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      description: 'A garden city with iconic skyline'
+                    },
+                    { 
+                      name: 'London', 
+                      code: 'LHR', 
+                      image: 'https://images.unsplash.com/photo-1533929736458-ca588d08c8be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      description: 'Historic city with modern charm'
+                    },
+                    { 
+                      name: 'New York', 
+                      code: 'JFK', 
+                      image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      description: 'The Big Apple that never sleeps'
+                    }
+                  ].map((destination, index) => (
+                    <motion.div
+                      key={index}
+                      className="min-w-[280px] max-w-[280px] bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all cursor-pointer border border-emerald-100"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div 
+                        className="h-48 bg-cover bg-center" 
+                        style={{ 
+                          backgroundImage: `url(${destination.image})` 
+                        }}
+                      ></div>
+                      <div className="p-4">
+                        <h3 className="text-lg font-semibold text-emerald-800">{destination.name}</h3>
+                        <p className="text-emerald-600 text-sm">{destination.code}</p>
+                        <p className="text-gray-600 text-sm mt-2">{destination.description}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </motion.div>
             </div>
           </SpotlightCard>
         </div>
