@@ -1,21 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPlane, FaCalendarAlt, FaSearch, FaExchangeAlt } from 'react-icons/fa';
+import { FaPlane, FaCalendarAlt, FaSearch, FaExchangeAlt, FaUser, FaAngleDown, FaAngleUp } from 'react-icons/fa';
 import GradientText from './GradientText';
 import AnimatedList from './AnimatedList';
+import { motion, AnimatePresence } from 'framer-motion';
+import { searchAirports, formatAirportForDisplay } from '../services/airportService';
 
 export default function FlightSearch({ onSearch }) {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [passengers, setPassengers] = useState(1);
   const [showFromSuggestions, setShowFromSuggestions] = useState(false);
   const [showToSuggestions, setShowToSuggestions] = useState(false);
+  const [showPassengerDropdown, setShowPassengerDropdown] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fromRef = useRef(null);
   const toRef = useRef(null);
+  const passengerRef = useRef(null);
 
+  // Use expanded airport list from service
   const dummySuggestions = [
     'Delhi (DEL)',
     'Mumbai (BOM)',
@@ -27,44 +32,76 @@ export default function FlightSearch({ onSearch }) {
     'Cochin (COK)',
     'Pune (PNQ)',
     'Jaipur (JAI)',
+    'Goa (GOI)',
+    'Dubai (DXB)',
+    'Singapore (SIN)',
+    'London (LHR)',
+    'New York (JFK)',
+    'Bangkok (BKK)',
+    'Hong Kong (HKG)',
+    'Sydney (SYD)'
   ];
 
-  const handleFromChange = (e) => {
+  const handleFromChange = async (e) => {
     const value = e.target.value;
     setFrom(value);
     if (value.trim().length > 1) {
       // Mock API call for suggestions
       setIsLoading(true);
-      setTimeout(() => {
+      try {
+        // Try to use the searchAirports service, fallback to dummy suggestions
+        const airports = await searchAirports(value);
+        if (airports && airports.length > 0) {
+          setSuggestions(airports.map(formatAirportForDisplay));
+        } else {
+          const filtered = dummySuggestions.filter(
+            (s) => s.toLowerCase().includes(value.toLowerCase())
+          );
+          setSuggestions(filtered);
+        }
+      } catch (error) {
         const filtered = dummySuggestions.filter(
           (s) => s.toLowerCase().includes(value.toLowerCase())
         );
         setSuggestions(filtered);
+      } finally {
         setIsLoading(false);
         setShowFromSuggestions(true);
         setShowToSuggestions(false);
-      }, 300);
+      }
     } else {
       setSuggestions([]);
       setShowFromSuggestions(false);
     }
   };
 
-  const handleToChange = (e) => {
+  const handleToChange = async (e) => {
     const value = e.target.value;
     setTo(value);
     if (value.trim().length > 1) {
       // Mock API call for suggestions
       setIsLoading(true);
-      setTimeout(() => {
+      try {
+        // Try to use the searchAirports service, fallback to dummy suggestions
+        const airports = await searchAirports(value);
+        if (airports && airports.length > 0) {
+          setSuggestions(airports.map(formatAirportForDisplay));
+        } else {
+          const filtered = dummySuggestions.filter(
+            (s) => s.toLowerCase().includes(value.toLowerCase())
+          );
+          setSuggestions(filtered);
+        }
+      } catch (error) {
         const filtered = dummySuggestions.filter(
           (s) => s.toLowerCase().includes(value.toLowerCase())
         );
         setSuggestions(filtered);
+      } finally {
         setIsLoading(false);
         setShowToSuggestions(true);
         setShowFromSuggestions(false);
-      }, 300);
+      }
     } else {
       setSuggestions([]);
       setShowToSuggestions(false);
@@ -105,6 +142,9 @@ export default function FlightSearch({ onSearch }) {
       }
       if (toRef.current && !toRef.current.contains(event.target)) {
         setShowToSuggestions(false);
+      }
+      if (passengerRef.current && !passengerRef.current.contains(event.target)) {
+        setShowPassengerDropdown(false);
       }
     };
 
@@ -210,18 +250,53 @@ export default function FlightSearch({ onSearch }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Passengers</label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <select
-                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full py-3 sm:text-sm border-gray-300 rounded-md"
-                value={passengers}
-                onChange={(e) => setPassengers(parseInt(e.target.value))}
+            <div className="mt-1 relative rounded-md shadow-sm" ref={passengerRef}>
+              <div 
+                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full py-3 pl-3 pr-10 sm:text-sm border-gray-300 rounded-md cursor-pointer bg-white flex justify-between items-center"
+                onClick={() => setShowPassengerDropdown(!showPassengerDropdown)}
               >
-                {[1, 2, 3, 4, 5, 6].map((num) => (
-                  <option key={num} value={num}>
-                    {num} {num === 1 ? 'Passenger' : 'Passengers'}
-                  </option>
-                ))}
-              </select>
+                <div className="flex items-center">
+                  <FaUser className="h-4 w-4 text-emerald-500 mr-2" />
+                  <span>{passengers} {passengers === 1 ? 'Passenger' : 'Passengers'}</span>
+                </div>
+                <div className="text-gray-400">
+                  {showPassengerDropdown ? <FaAngleUp /> : <FaAngleDown />}
+                </div>
+              </div>
+              
+              <AnimatePresence>
+                {showPassengerDropdown && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 border border-gray-200"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                      <div
+                        key={num}
+                        className={`px-4 py-2 hover:bg-emerald-50 cursor-pointer transition-colors flex items-center justify-between ${
+                          passengers === num ? 'bg-emerald-50 text-emerald-700' : ''
+                        }`}
+                        onClick={() => {
+                          setPassengers(num);
+                          setShowPassengerDropdown(false);
+                        }}
+                      >
+                        <span>{num} {num === 1 ? 'Passenger' : 'Passengers'}</span>
+                        {passengers === num && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="h-2 w-2 rounded-full bg-emerald-500"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
