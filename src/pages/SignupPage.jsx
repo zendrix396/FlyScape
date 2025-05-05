@@ -90,13 +90,13 @@ export default function SignupPage() {
         </div>
         
         <SpotlightCard 
-          className="bg-white rounded-xl shadow-md overflow-hidden p-8 border border-emerald-50"
+          className="bg-white rounded-xl overflow-hidden p-8 border border-gray-50"
           spotlightColor="rgba(16, 185, 129, 0.15)"
         >
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-                <p className="text-sm text-red-600">{error}</p>
+              <div className="bg-gray-50 border-l-4 border-gray-400 p-4 mb-4">
+                <p className="text-sm text-gray-700">{error}</p>
               </div>
             )}
             
@@ -116,7 +116,7 @@ export default function SignupPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                   placeholder="Your full name"
                 />
               </div>
@@ -138,7 +138,7 @@ export default function SignupPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                   placeholder="Your email address"
                 />
               </div>
@@ -160,7 +160,7 @@ export default function SignupPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                   placeholder="Create a password"
                 />
               </div>
@@ -185,7 +185,7 @@ export default function SignupPage() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                   placeholder="Confirm your password"
                 />
               </div>
@@ -197,15 +197,15 @@ export default function SignupPage() {
                 name="terms"
                 type="checkbox"
                 required
-                className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300 rounded"
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
                 I agree to the{' '}
-                <a href="#" className="text-emerald-600 hover:text-emerald-500">
+                <a href="#" className="text-gray-700 hover:text-gray-700">
                   Terms of Service
                 </a>{' '}
                 and{' '}
-                <a href="#" className="text-emerald-600 hover:text-emerald-500">
+                <a href="#" className="text-gray-700 hover:text-gray-700">
                   Privacy Policy
                 </a>
               </label>
@@ -217,7 +217,7 @@ export default function SignupPage() {
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white font-medium bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent rounded-md text-white font-medium bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
                 {loading ? 'Creating account...' : 'Create account'}
               </motion.button>
@@ -241,9 +241,9 @@ export default function SignupPage() {
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                <FaGoogle className="h-5 w-5 text-red-500 mr-2" />
+                <FaGoogle className="h-5 w-5 text-gray-600 mr-2" />
                 Sign up with Google
               </motion.button>
             </div>
@@ -253,7 +253,7 @@ export default function SignupPage() {
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-emerald-600 hover:text-emerald-500">
+            <Link to="/login" className="font-medium text-gray-700 hover:text-gray-700">
               Sign in
             </Link>
           </p>

@@ -7,7 +7,7 @@ import BookingHistoryItem from './BookingHistoryItem';
 export default function BookingHistory({ bookings = [] }) {
   if (bookings.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-md p-8 text-center">
+      <div className="bg-white rounded-xl p-8 text-center">
         <div className="h-20 w-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
           <FaTicketAlt className="h-10 w-10 text-gray-400" />
         </div>
@@ -15,7 +15,7 @@ export default function BookingHistory({ bookings = [] }) {
         <p className="text-gray-500 mb-6">You haven't made any flight bookings yet.</p>
         <Link
           to="/"
-          className="inline-block bg-emerald-600 text-white px-6 py-3 rounded-md font-medium hover:bg-emerald-700 transition-colors"
+          className="inline-block bg-gray-600 text-white px-6 py-3 rounded-md font-medium hover:bg-gray-700 "
         >
           Book a Flight
         </Link>

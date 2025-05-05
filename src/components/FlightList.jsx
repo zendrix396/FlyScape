@@ -103,7 +103,7 @@ export default function FlightList({ flights, onFlightSelect, searchParams }) {
 
   return (
     <div className="w-full">
-      <div className="mb-6 sticky top-0 z-10 bg-white p-4 rounded-lg shadow-md">
+      <div className="mb-6 sticky top-0 z-10 bg-white p-4 rounded-lg">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div className="mb-4 md:mb-0">
             <h2 className="text-xl font-bold text-gray-800">
@@ -117,7 +117,7 @@ export default function FlightList({ flights, onFlightSelect, searchParams }) {
           <div className="flex space-x-3">
             <div className="relative">
               <select
-                className="appearance-none bg-white border border-gray-300 rounded-md py-2 px-4 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="appearance-none bg-white border border-gray-300 rounded-md py-2 px-4 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                 value={sortCriteria}
                 onChange={(e) => setSortCriteria(e.target.value)}
               >
@@ -141,7 +141,7 @@ export default function FlightList({ flights, onFlightSelect, searchParams }) {
             
             <button
               onClick={toggleFilterMenu}
-              className={`p-2 border rounded-md text-white ${isFilterMenuOpen ? 'bg-emerald-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}
+              className={`p-2 border rounded-md text-white ${isFilterMenuOpen ? 'bg-gray-600' : 'bg-gray-500 hover:bg-gray-600'}`}
             >
               <FaFilter />
             </button>
@@ -165,7 +165,7 @@ export default function FlightList({ flights, onFlightSelect, searchParams }) {
                       <label key={airline} className="flex items-center">
                         <input
                           type="checkbox"
-                          className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                          className="rounded text-gray-700 focus:ring-gray-500 h-4 w-4"
                           checked={filters.airlines.includes(airline)}
                           onChange={() => handleAirlineFilterChange(airline)}
                         />
@@ -251,7 +251,7 @@ export default function FlightList({ flights, onFlightSelect, searchParams }) {
               priceRange: { min: 0, max: 5000 },
               departureTime: { min: 0, max: 24 }
             })}
-            className="mt-4 text-emerald-500 hover:text-emerald-600"
+            className="mt-4 text-gray-700 hover:text-gray-700"
           >
             Clear all filters
           </button>

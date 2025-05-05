@@ -53,7 +53,7 @@ export default function VoucherPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <div className=" rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading ticket voucher...</p>
         </div>
       </div>
@@ -63,15 +63,15 @@ export default function VoucherPage() {
   if (error || !booking) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8 bg-white rounded-xl shadow-md">
-          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+        <div className="text-center max-w-md mx-auto p-8 bg-white rounded-xl">
+          <div className="text-gray-600 text-5xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Booking Not Found</h2>
           <p className="text-gray-600 mb-6">
             {error || 'The booking you are looking for could not be found.'}
           </p>
           <button
             onClick={() => navigate('/')}
-            className="bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors"
+            className="bg-gray-600 text-white px-6 py-3 rounded-md font-medium hover:bg-gray-700 "
           >
             Back to Home
           </button>

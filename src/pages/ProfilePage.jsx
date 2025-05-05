@@ -31,7 +31,7 @@ export default function ProfilePage() {
           <p className="mt-2 text-gray-600">You need to be logged in to view this page</p>
           <Link
             to="/login"
-            className="mt-4 inline-block px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+            className="mt-4 inline-block px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
           >
             Go to Login
           </Link>
@@ -70,11 +70,11 @@ export default function ProfilePage() {
         
         {/* Profile Header */}
         <SpotlightCard
-          className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-50 mb-6"
+          className="bg-white rounded-xl overflow-hidden border border-gray-50 mb-6"
           spotlightColor="rgba(16, 185, 129, 0.15)"
         >
           <div className="p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6">
-            <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center">
               {userProfile.photoURL ? (
                 <img
                   src={userProfile.photoURL}
@@ -82,7 +82,7 @@ export default function ProfilePage() {
                   className="w-24 h-24 rounded-full object-cover"
                 />
               ) : (
-                <FaUser className="h-10 w-10 text-emerald-600" />
+                <FaUser className="h-10 w-10 text-gray-700" />
               )}
             </div>
             
@@ -97,7 +97,7 @@ export default function ProfilePage() {
               <div className="mt-6 flex flex-wrap gap-3 justify-center md:justify-start">
                 <Link
                   to="/bookings"
-                  className="inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium hover:bg-emerald-200 transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-200 "
                 >
                   <FaHistory className="mr-2" />
                   My Bookings
@@ -108,7 +108,7 @@ export default function ProfilePage() {
                   disabled={loading}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="inline-flex items-center px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200 transition-colors disabled:opacity-70"
+                  className="inline-flex items-center px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200  disabled:opacity-70"
                 >
                   <FaSignOutAlt className="mr-2" />
                   {loading ? 'Signing out...' : 'Sign out'}
@@ -116,8 +116,8 @@ export default function ProfilePage() {
               </div>
             </div>
             
-            <div className="flex-shrink-0 bg-emerald-50 rounded-lg p-6 text-center min-w-40">
-              <div className="flex items-center justify-center text-emerald-600 mb-2">
+            <div className="flex-shrink-0 bg-gray-50 rounded-lg p-6 text-center min-w-40">
+              <div className="flex items-center justify-center text-gray-700 mb-2">
                 <FaWallet className="mr-2 h-5 w-5" />
                 <span className="font-semibold">Wallet Balance</span>
               </div>
@@ -135,12 +135,12 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Upcoming Flights */}
           <SpotlightCard
-            className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-50 md:col-span-2"
+            className="bg-white rounded-xl overflow-hidden border border-gray-50 md:col-span-2"
             spotlightColor="rgba(16, 185, 129, 0.15)"
           >
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-800 flex items-center mb-4">
-                <FaPlane className="mr-2 text-emerald-500" />
+                <FaPlane className="mr-2 text-gray-700" />
                 Your Travel Status
               </h2>
               
@@ -153,7 +153,7 @@ export default function ProfilePage() {
                     </div>
                     <Link
                       to="/bookings"
-                      className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                      className="text-sm font-medium text-gray-700 hover:text-gray-800"
                     >
                       View all
                     </Link>
@@ -165,7 +165,7 @@ export default function ProfilePage() {
                     </p>
                     <Link
                       to="/flights"
-                      className="mt-4 inline-block px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm"
+                      className="mt-4 inline-block px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
                     >
                       Book a Flight
                     </Link>
@@ -175,7 +175,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center text-gray-700 mb-2">
-                      <FaWallet className="mr-2 text-emerald-500" />
+                      <FaWallet className="mr-2 text-gray-700" />
                       <h3 className="font-medium">Recent Transactions</h3>
                     </div>
                     <p className="text-sm text-gray-500">
@@ -185,13 +185,13 @@ export default function ProfilePage() {
                   
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center text-gray-700 mb-2">
-                      <FaCreditCard className="mr-2 text-emerald-500" />
+                      <FaCreditCard className="mr-2 text-gray-700" />
                       <h3 className="font-medium">Payment Methods</h3>
                     </div>
                     <p className="text-sm text-gray-500">
                       No payment methods saved.
                     </p>
-                    <button className="mt-2 text-sm text-emerald-600 hover:text-emerald-700">
+                    <button className="mt-2 text-sm text-gray-700 hover:text-gray-800">
                       + Add Payment Method
                     </button>
                   </div>
@@ -202,12 +202,12 @@ export default function ProfilePage() {
           
           {/* Settings & Preferences */}
           <SpotlightCard
-            className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-50"
+            className="bg-white rounded-xl overflow-hidden border border-gray-50"
             spotlightColor="rgba(16, 185, 129, 0.15)"
           >
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-800 flex items-center mb-4">
-                <FaBell className="mr-2 text-emerald-500" />
+                <FaBell className="mr-2 text-gray-700" />
                 Preferences
               </h2>
               
@@ -250,14 +250,14 @@ export default function ProfilePage() {
                 
                 <div className="pt-4 border-t border-gray-100">
                   <h3 className="text-sm font-medium text-gray-700 flex items-center">
-                    <FaShieldAlt className="mr-2 text-emerald-500" />
+                    <FaShieldAlt className="mr-2 text-gray-700" />
                     Security
                   </h3>
                   
-                  <button className="mt-3 text-sm text-emerald-600 hover:text-emerald-700 block">
+                  <button className="mt-3 text-sm text-gray-700 hover:text-gray-800 block">
                     Change Password
                   </button>
-                  <button className="mt-2 text-sm text-emerald-600 hover:text-emerald-700 block">
+                  <button className="mt-2 text-sm text-gray-700 hover:text-gray-800 block">
                     Two-Factor Authentication
                   </button>
                 </div>
@@ -267,22 +267,17 @@ export default function ProfilePage() {
         </div>
         
         {/* Footer Card */}
-        <SpotlightCard
-          className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-50 mt-6"
-          spotlightColor="rgba(16, 185, 129, 0.15)"
-        >
-          <div className="p-6">
-            <div className="text-center">
-              <h3 className="font-medium text-gray-700">Need Help?</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Our customer support team is available 24/7 to assist you with any questions.
-              </p>
-              <button className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                Contact Support
-              </button>
-            </div>
+        <div className="bg-white border mt-6 p-4">
+          <div className="text-center">
+            <h3>Need Help?</h3>
+            <p className="text-gray-500 mt-1">
+              Our customer support team is available 24/7.
+            </p>
+            <button className="mt-4 px-4 py-2 border rounded bg-gray-600 text-white">
+              Contact Support
+            </button>
           </div>
-        </SpotlightCard>
+        </div>
       </div>
     </div>
   );

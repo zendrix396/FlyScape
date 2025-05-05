@@ -37,11 +37,11 @@ export default function FlightDetail({ flight }) {
   const getAmenityIcon = (amenity) => {
     switch (amenity) {
       case 'wifi':
-        return <FaWifi className="text-emerald-500" />;
+        return <FaWifi className="text-gray-700" />;
       case 'meals':
-        return <FaUtensils className="text-emerald-500" />;
+        return <FaUtensils className="text-gray-700" />;
       case 'entertainment':
-        return <span className="text-xl text-emerald-500">📺</span>;
+        return <span className="text-xl text-gray-700">📺</span>;
       default:
         return null;
     }
@@ -61,7 +61,7 @@ export default function FlightDetail({ flight }) {
       </div>
       
       <SpotlightCard
-        className="bg-white rounded-xl overflow-hidden shadow-lg border border-emerald-50 mb-8"
+        className="bg-white rounded-xl overflow-hidden border border-gray-50 mb-8"
         spotlightColor="rgba(16, 185, 129, 0.15)"
       >
         <div className="p-6">
@@ -71,7 +71,7 @@ export default function FlightDetail({ flight }) {
               <div className="text-gray-500">{flightNumber}</div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-emerald-600">₹{price.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-gray-700">₹{price.toLocaleString()}</div>
               <div className="text-sm text-gray-500">per person</div>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function FlightDetail({ flight }) {
             <div className="flex items-center my-6 md:my-0">
               <div className="h-0.5 w-12 bg-gray-300 hidden md:block"></div>
               <div className="mx-4 flex flex-col items-center">
-                <FaPlane className="h-6 w-6 text-emerald-500 transform rotate-90" />
+                <FaPlane className="h-6 w-6 text-gray-700 transform rotate-90" />
                 <div className="text-sm text-gray-500 mt-1">{duration}</div>
                 <div className="text-xs text-gray-400">
                   {stops === 0 ? 'Non-stop' : `${stops} ${stops === 1 ? 'stop' : 'stops'}`}
@@ -112,7 +112,7 @@ export default function FlightDetail({ flight }) {
             <div>
               <div className="text-sm text-gray-500 mb-2">Baggage Allowance</div>
               <div className="flex items-center">
-                <FaSuitcase className="text-emerald-500 mr-2" />
+                <FaSuitcase className="text-gray-700 mr-2" />
                 <span className="font-medium">{baggageAllowance}</span>
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function FlightDetail({ flight }) {
             <div>
               <div className="text-sm text-gray-500 mb-2">Flight Duration</div>
               <div className="flex items-center">
-                <FaClock className="text-emerald-500 mr-2" />
+                <FaClock className="text-gray-700 mr-2" />
                 <span className="font-medium">{duration}</span>
               </div>
             </div>
@@ -142,7 +142,7 @@ export default function FlightDetail({ flight }) {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <SpotlightCard 
-          className="bg-white rounded-xl overflow-hidden shadow-md border border-emerald-50"
+          className="bg-white rounded-xl overflow-hidden border border-gray-50"
           spotlightColor="rgba(16, 185, 129, 0.1)"
         >
           <div className="p-6">
@@ -158,14 +158,14 @@ export default function FlightDetail({ flight }) {
               </div>
               <div className="border-t border-gray-100 pt-2 mt-2 flex justify-between">
                 <span className="font-semibold">Total</span>
-                <span className="font-bold text-emerald-600">₹{price.toLocaleString()}</span>
+                <span className="font-bold text-gray-700">₹{price.toLocaleString()}</span>
               </div>
             </div>
           </div>
         </SpotlightCard>
         
         <SpotlightCard 
-          className="bg-white rounded-xl overflow-hidden shadow-md border border-emerald-50"
+          className="bg-white rounded-xl overflow-hidden border border-gray-50"
           spotlightColor="rgba(16, 185, 129, 0.1)"
         >
           <div className="p-6">
@@ -173,7 +173,7 @@ export default function FlightDetail({ flight }) {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Before 48 hours</span>
-                <span className="font-medium text-emerald-600">₹{(price * 0.1).toFixed(2)} fee</span>
+                <span className="font-medium text-gray-700">₹{(price * 0.1).toFixed(2)} fee</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Within 24-48 hours</span>
@@ -181,7 +181,7 @@ export default function FlightDetail({ flight }) {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Within 24 hours</span>
-                <span className="font-medium text-red-600">Non-refundable</span>
+                <span className="font-medium text-gray-700">Non-refundable</span>
               </div>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function FlightDetail({ flight }) {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium shadow-md hover:bg-emerald-700 transition-colors"
+          className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 "
         >
           Book This Flight
         </motion.button>

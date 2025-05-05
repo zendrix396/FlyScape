@@ -210,7 +210,7 @@ export default function BookingForm({ flight, onSubmit }) {
   return (
     <div className="w-full max-w-md mx-auto">
       <SpotlightCard 
-        className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-100"
+        className="bg-white rounded-xl overflow-hidden border border-gray-100"
         spotlightColor="rgba(16, 185, 129, 0.2)"
       >
         <div className="p-6">
@@ -222,11 +222,11 @@ export default function BookingForm({ flight, onSubmit }) {
             />
             <div className="mt-4 flex justify-center">
               <div className="flex items-center">
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${formStage >= 1 ? 'bg-emerald-500 text-white' : 'bg-gray-200'}`}>
+                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${formStage >= 1 ? 'bg-gray-500 text-white' : 'bg-gray-200'}`}>
                   1
                 </div>
-                <div className={`h-1 w-16 ${formStage >= 2 ? 'bg-emerald-500' : 'bg-gray-200'}`}></div>
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${formStage >= 2 ? 'bg-emerald-500 text-white' : 'bg-gray-200'}`}>
+                <div className={`h-1 w-16 ${formStage >= 2 ? 'bg-gray-500' : 'bg-gray-200'}`}></div>
+                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${formStage >= 2 ? 'bg-gray-500 text-white' : 'bg-gray-200'}`}>
                   2
                 </div>
               </div>
@@ -234,7 +234,7 @@ export default function BookingForm({ flight, onSubmit }) {
           </div>
 
           {formErrors.submission && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md border border-red-200">
+            <div className="mb-4 p-3 bg-gray-50 text-red-700 rounded-md border border-red-200">
               {formErrors.submission}
             </div>
           )}
@@ -248,7 +248,7 @@ export default function BookingForm({ flight, onSubmit }) {
                 <div className="flex items-center">
                   <button 
                     type="button"
-                    className={`p-2 rounded-md ${passengersCount > 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'}`}
+                    className={`p-2 rounded-md ${passengersCount > 1 ? 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-400'}`}
                     onClick={() => passengersCount > 1 && setPassengersCount(prev => prev - 1)}
                     disabled={passengersCount <= 1}
                   >
@@ -257,7 +257,7 @@ export default function BookingForm({ flight, onSubmit }) {
                   <span className="px-4 text-lg font-medium">{passengersCount}</span>
                   <button 
                     type="button"
-                    className="p-2 bg-emerald-100 text-emerald-700 rounded-md"
+                    className="p-2 bg-gray-100 text-gray-800 rounded-md"
                     onClick={() => setPassengersCount(prev => prev + 1)}
                   >
                     <FaUserPlus />
@@ -278,8 +278,8 @@ export default function BookingForm({ flight, onSubmit }) {
                         <FaUser className="text-gray-400" />
                       </div>
                       <input
-                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
-                          formErrors[`passenger${index}_name`] ? 'border-red-500' : 'border-gray-300'
+                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-gray-500 ${
+                          formErrors[`passenger${index}_name`] ? 'border-gray-400' : 'border-gray-300'
                         }`}
                         id={`passenger-${index}-name`}
                         type="text"
@@ -289,7 +289,7 @@ export default function BookingForm({ flight, onSubmit }) {
                       />
                     </div>
                     {formErrors[`passenger${index}_name`] && (
-                      <p className="text-red-500 text-xs mt-1">{formErrors[`passenger${index}_name`]}</p>
+                      <p className="text-gray-600 text-xs mt-1">{formErrors[`passenger${index}_name`]}</p>
                     )}
                   </div>
 
@@ -302,8 +302,8 @@ export default function BookingForm({ flight, onSubmit }) {
                         <FaEnvelope className="text-gray-400" />
                       </div>
                       <input
-                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
-                          formErrors[`passenger${index}_email`] ? 'border-red-500' : 'border-gray-300'
+                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-gray-500 ${
+                          formErrors[`passenger${index}_email`] ? 'border-gray-400' : 'border-gray-300'
                         }`}
                         id={`passenger-${index}-email`}
                         type="email"
@@ -313,7 +313,7 @@ export default function BookingForm({ flight, onSubmit }) {
                       />
                     </div>
                     {formErrors[`passenger${index}_email`] && (
-                      <p className="text-red-500 text-xs mt-1">{formErrors[`passenger${index}_email`]}</p>
+                      <p className="text-gray-600 text-xs mt-1">{formErrors[`passenger${index}_email`]}</p>
                     )}
                   </div>
 
@@ -326,8 +326,8 @@ export default function BookingForm({ flight, onSubmit }) {
                         <FaPhone className="text-gray-400" />
                       </div>
                       <input
-                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
-                          formErrors[`passenger${index}_phone`] ? 'border-red-500' : 'border-gray-300'
+                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-gray-500 ${
+                          formErrors[`passenger${index}_phone`] ? 'border-gray-400' : 'border-gray-300'
                         }`}
                         id={`passenger-${index}-phone`}
                         type="tel"
@@ -337,7 +337,7 @@ export default function BookingForm({ flight, onSubmit }) {
                       />
                     </div>
                     {formErrors[`passenger${index}_phone`] && (
-                      <p className="text-red-500 text-xs mt-1">{formErrors[`passenger${index}_phone`]}</p>
+                      <p className="text-gray-600 text-xs mt-1">{formErrors[`passenger${index}_phone`]}</p>
                     )}
                   </div>
                 </div>
@@ -355,14 +355,14 @@ export default function BookingForm({ flight, onSubmit }) {
                 <div className="border-t border-gray-200 my-2 pt-2"></div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700 font-medium">Total:</span>
-                  <span className="text-lg font-bold text-emerald-600">₹{totalPrice}</span>
+                  <span className="text-lg font-bold text-gray-700">₹{totalPrice}</span>
                 </div>
               </div>
 
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline"
+                  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline"
                 >
                   Continue to Payment
                 </button>
@@ -376,26 +376,26 @@ export default function BookingForm({ flight, onSubmit }) {
                   Payment Method
                 </label>
                 <div className="grid grid-cols-2 gap-4">
-                  <label className={`flex items-center space-x-3 p-4 border rounded-md cursor-pointer transition-colors ${formData.paymentMethod === 'card' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300'}`}>
+                  <label className={`flex items-center space-x-3 p-4 border rounded-md cursor-pointer  ${formData.paymentMethod === 'card' ? 'border-gray-500 bg-gray-50' : 'border-gray-300'}`}>
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="card"
                       checked={formData.paymentMethod === 'card'}
                       onChange={handleChange}
-                      className="form-radio text-emerald-600 h-4 w-4"
+                      className="form-radio text-gray-700 h-4 w-4"
                     />
                     <span>Credit Card</span>
                   </label>
                   
-                  <label className={`flex items-center space-x-3 p-4 border rounded-md cursor-pointer transition-colors ${formData.paymentMethod === 'wallet' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300'}`}>
+                  <label className={`flex items-center space-x-3 p-4 border rounded-md cursor-pointer  ${formData.paymentMethod === 'wallet' ? 'border-gray-500 bg-gray-50' : 'border-gray-300'}`}>
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="wallet"
                       checked={formData.paymentMethod === 'wallet'}
                       onChange={handleChange}
-                      className="form-radio text-emerald-600 h-4 w-4"
+                      className="form-radio text-gray-700 h-4 w-4"
                     />
                     <span>Wallet</span>
                   </label>
@@ -407,7 +407,7 @@ export default function BookingForm({ flight, onSubmit }) {
                   <h3 className="font-medium text-gray-700 mb-2">Wallet Payment</h3>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Available Balance:</span>
-                    <span className="font-bold text-emerald-600">₹{userProfile ? (userProfile.walletBalance || userProfile.wallet || 0).toLocaleString() : 0}</span>
+                    <span className="font-bold text-gray-700">₹{userProfile ? (userProfile.walletBalance || userProfile.wallet || 0).toLocaleString() : 0}</span>
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-gray-600">Total Amount:</span>
@@ -415,7 +415,7 @@ export default function BookingForm({ flight, onSubmit }) {
                   </div>
                   
                   {formErrors.wallet && (
-                    <p className="text-red-500 text-sm mt-3">{formErrors.wallet}</p>
+                    <p className="text-gray-600 text-sm mt-3">{formErrors.wallet}</p>
                   )}
                 </div>
               ) : (
@@ -430,8 +430,8 @@ export default function BookingForm({ flight, onSubmit }) {
                         <FaCreditCard className="text-gray-400" />
                       </div>
                       <input
-                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
-                          formErrors.cardNumber ? 'border-red-500' : 'border-gray-300'
+                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-gray-500 ${
+                          formErrors.cardNumber ? 'border-gray-400' : 'border-gray-300'
                         }`}
                         id="cardNumber"
                         name="cardNumber"
@@ -442,7 +442,7 @@ export default function BookingForm({ flight, onSubmit }) {
                       />
                     </div>
                     {formErrors.cardNumber && (
-                      <p className="text-red-500 text-xs mt-1">{formErrors.cardNumber}</p>
+                      <p className="text-gray-600 text-xs mt-1">{formErrors.cardNumber}</p>
                     )}
                   </div>
 
@@ -456,8 +456,8 @@ export default function BookingForm({ flight, onSubmit }) {
                           <FaCalendarAlt className="text-gray-400" />
                         </div>
                         <input
-                          className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
-                            formErrors.expiryDate ? 'border-red-500' : 'border-gray-300'
+                          className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-gray-500 ${
+                            formErrors.expiryDate ? 'border-gray-400' : 'border-gray-300'
                           }`}
                           id="expiryDate"
                           name="expiryDate"
@@ -468,7 +468,7 @@ export default function BookingForm({ flight, onSubmit }) {
                         />
                       </div>
                       {formErrors.expiryDate && (
-                        <p className="text-red-500 text-xs mt-1">{formErrors.expiryDate}</p>
+                        <p className="text-gray-600 text-xs mt-1">{formErrors.expiryDate}</p>
                       )}
                     </div>
                     
@@ -481,8 +481,8 @@ export default function BookingForm({ flight, onSubmit }) {
                           <FaLock className="text-gray-400" />
                         </div>
                         <input
-                          className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
-                            formErrors.cvv ? 'border-red-500' : 'border-gray-300'
+                          className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-gray-500 ${
+                            formErrors.cvv ? 'border-gray-400' : 'border-gray-300'
                           }`}
                           id="cvv"
                           name="cvv"
@@ -493,7 +493,7 @@ export default function BookingForm({ flight, onSubmit }) {
                         />
                       </div>
                       {formErrors.cvv && (
-                        <p className="text-red-500 text-xs mt-1">{formErrors.cvv}</p>
+                        <p className="text-gray-600 text-xs mt-1">{formErrors.cvv}</p>
                       )}
                     </div>
                   </div>
@@ -513,7 +513,7 @@ export default function BookingForm({ flight, onSubmit }) {
                 <div className="border-t border-gray-200 my-2 pt-2"></div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700 font-medium">Total Amount:</span>
-                  <span className="text-lg font-bold text-emerald-600">₹{totalPrice.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-gray-700">₹{totalPrice.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -527,7 +527,7 @@ export default function BookingForm({ flight, onSubmit }) {
                 </button>
                 <button
                   type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline"
+                  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline"
                   disabled={isProcessing}
                 >
                   {isProcessing ? 'Processing...' : 'Complete Booking'}

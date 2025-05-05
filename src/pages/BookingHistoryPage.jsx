@@ -59,7 +59,7 @@ export default function BookingHistoryPage() {
           <p className="mt-2 text-gray-600">You need to be logged in to view your bookings</p>
           <Link
             to="/login"
-            className="mt-4 inline-block px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+            className="mt-4 inline-block px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
           >
             Go to Login
           </Link>
@@ -85,18 +85,18 @@ export default function BookingHistoryPage() {
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="animate-pulse flex space-x-4">
-              <div className="rounded-full bg-emerald-200 h-12 w-12"></div>
+              <div className="rounded-full bg-gray-200 h-12 w-12"></div>
               <div className="flex-1 space-y-4 py-1">
-                <div className="h-4 bg-emerald-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-emerald-200 rounded"></div>
-                  <div className="h-4 bg-emerald-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
                 </div>
               </div>
             </div>
           </div>
         ) : error ? (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+          <div className="bg-gray-50 border-l-4 border-gray-400 p-4 mb-4">
             <p className="text-red-700">{error}</p>
           </div>
         ) : (

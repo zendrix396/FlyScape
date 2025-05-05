@@ -102,7 +102,7 @@ export default function DebugPage() {
               <button
                 onClick={runPermissionTests}
                 disabled={loading || !currentUser}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
               >
                 {loading ? 'Running Tests...' : 'Run Permission Tests'}
               </button>
@@ -111,14 +111,14 @@ export default function DebugPage() {
                 <div className="mt-4">
                   <h3 className="text-md font-medium text-gray-900">Test Results:</h3>
                   <div className="mt-2 space-y-2">
-                    <div className={`p-3 rounded-md ${testResults.auth ? 'bg-green-50' : 'bg-red-50'}`}>
+                    <div className={`p-3 rounded-md ${testResults.auth ? 'bg-green-50' : 'bg-gray-50'}`}>
                       <p className={`text-sm ${testResults.auth ? 'text-green-800' : 'text-red-800'}`}>
                         Authentication: {testResults.auth ? 'Success ✓' : 'Failed ✗'}
                       </p>
                     </div>
                     
                     {testResults.firestoreRead !== null && (
-                      <div className={`p-3 rounded-md ${testResults.firestoreRead ? 'bg-green-50' : 'bg-red-50'}`}>
+                      <div className={`p-3 rounded-md ${testResults.firestoreRead ? 'bg-green-50' : 'bg-gray-50'}`}>
                         <p className={`text-sm ${testResults.firestoreRead ? 'text-green-800' : 'text-red-800'}`}>
                           Firestore Read: {testResults.firestoreRead ? 'Success ✓' : 'Failed ✗'}
                         </p>
@@ -126,7 +126,7 @@ export default function DebugPage() {
                     )}
                     
                     {testResults.firestoreWrite !== null && (
-                      <div className={`p-3 rounded-md ${testResults.firestoreWrite ? 'bg-green-50' : 'bg-red-50'}`}>
+                      <div className={`p-3 rounded-md ${testResults.firestoreWrite ? 'bg-green-50' : 'bg-gray-50'}`}>
                         <p className={`text-sm ${testResults.firestoreWrite ? 'text-green-800' : 'text-red-800'}`}>
                           Firestore Write: {testResults.firestoreWrite ? 'Success ✓' : 'Failed ✗'}
                         </p>
@@ -162,7 +162,7 @@ export default function DebugPage() {
               <button
                 onClick={attemptToFixUserProfile}
                 disabled={loading || !currentUser}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {loading ? 'Fixing...' : 'Attempt to Fix User Profile'}
               </button>

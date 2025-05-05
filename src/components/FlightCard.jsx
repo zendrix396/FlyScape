@@ -40,8 +40,8 @@ export default function FlightCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       whileHover={{ scale: 1.01 }}
-      className={`bg-white rounded-xl shadow-md overflow-hidden cursor-pointer transition-colors ${
-        selected ? 'border-2 border-emerald-500' : 'border border-gray-200'
+      className={`bg-white rounded-xl overflow-hidden cursor-pointer  ${
+        selected ? 'border-2 border-gray-500' : 'border border-gray-200'
       }`}
       onClick={onClick}
     >
@@ -49,8 +49,8 @@ export default function FlightCard({
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div className="flex items-center mb-3 md:mb-0">
             <div className="flex-shrink-0 mr-3">
-              <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                <FaPlane className="h-5 w-5 text-emerald-600" />
+              <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <FaPlane className="h-5 w-5 text-gray-700" />
               </div>
             </div>
             <div>
@@ -68,8 +68,8 @@ export default function FlightCard({
 
               <div className="flex-grow mx-2 sm:mx-4 px-4">
                 <div className="relative h-[2px] bg-gray-300 mt-6">
-                  <div className="absolute left-0 -top-[9px] h-5 w-5 rounded-full bg-emerald-500"></div>
-                  <div className="absolute right-0 -top-[9px] h-5 w-5 rounded-full bg-emerald-500"></div>
+                  <div className="absolute left-0 -top-[9px] h-5 w-5 rounded-full bg-gray-500"></div>
+                  <div className="absolute right-0 -top-[9px] h-5 w-5 rounded-full bg-gray-500"></div>
                 </div>
                 <div className="text-xs text-center text-gray-500 mt-2 flex items-center justify-center">
                   <FaClock className="mr-1" /> {formatDuration(duration)}
@@ -87,7 +87,7 @@ export default function FlightCard({
             <div className="flex flex-row md:flex-col items-center md:items-end justify-between">
               <div className="text-sm text-gray-500">Price</div>
               <div className="flex items-center">
-                <FaRupeeSign className="text-emerald-600" />
+                <FaRupeeSign className="text-gray-700" />
                 <div className="text-xl font-bold ml-1 text-gray-800">
                   <CountUp 
                     from={price - 100} 
@@ -98,11 +98,11 @@ export default function FlightCard({
                 </div>
               </div>
               {priceIncreased && (
-                <div className="text-xs text-red-500 mt-1">Price increased</div>
+                <div className="text-xs text-gray-600 mt-1">Price increased</div>
               )}
             </div>
             <button
-              className="mt-3 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-md text-sm transition-colors"
+              className="mt-3 w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md text-sm "
               onClick={onClick}
             >
               Select

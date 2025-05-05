@@ -50,13 +50,13 @@ export default function ForgotPasswordPage() {
         </div>
         
         <SpotlightCard 
-          className="bg-white rounded-xl shadow-md overflow-hidden p-8 border border-emerald-50"
+          className="bg-white rounded-xl overflow-hidden p-8 border border-gray-50"
           spotlightColor="rgba(16, 185, 129, 0.15)"
         >
           {message ? (
             <div className="text-center">
-              <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 mb-6">
-                <p className="text-sm text-emerald-700">{message}</p>
+              <div className="bg-gray-50 border-l-4 border-gray-500 p-4 mb-6">
+                <p className="text-sm text-gray-800">{message}</p>
               </div>
               <p className="text-gray-600 mb-6">
                 Didn't receive an email? Check your spam folder or try again.
@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
                 onClick={() => setMessage('')}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
               >
                 Try again
               </motion.button>
@@ -73,8 +73,8 @@ export default function ForgotPasswordPage() {
           ) : (
             <form className="space-y-6" onSubmit={handleSubmit}>
               {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-                  <p className="text-sm text-red-600">{error}</p>
+                <div className="bg-gray-50 border-l-4 border-gray-400 p-4 mb-4">
+                  <p className="text-sm text-gray-700">{error}</p>
                 </div>
               )}
               
@@ -94,7 +94,7 @@ export default function ForgotPasswordPage() {
                     required
                     value={email}
                     onChange={handleChange}
-                    className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     placeholder="Your email address"
                   />
                 </div>
@@ -106,7 +106,7 @@ export default function ForgotPasswordPage() {
                   disabled={isLoading}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white font-medium bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md text-white font-medium bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   {isLoading ? 'Sending...' : 'Reset Password'}
                 </motion.button>
@@ -116,7 +116,7 @@ export default function ForgotPasswordPage() {
         </SpotlightCard>
         
         <div className="text-center mt-4">
-          <Link to="/login" className="inline-flex items-center text-sm text-emerald-600 hover:text-emerald-500">
+          <Link to="/login" className="inline-flex items-center text-sm text-gray-700 hover:text-gray-700">
             <FaArrowLeft className="mr-2" />
             Back to login
           </Link>

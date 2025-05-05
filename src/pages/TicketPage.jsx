@@ -201,7 +201,7 @@ export default function TicketPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mx-auto"></div>
+          <div className=" rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading ticket...</p>
         </div>
       </div>
@@ -211,15 +211,15 @@ export default function TicketPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-xl shadow-md max-w-lg w-full text-center">
-          <div className="text-red-500 text-6xl mb-4">
+        <div className="bg-white p-8 rounded-xl max-w-lg w-full text-center">
+          <div className="text-gray-600 text-6xl mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="mx-auto h-16 w-16">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Ticket Not Found</h1>
           <p className="text-gray-600 mb-6">{error}</p>
-          <Link to="/" className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors">
+          <Link to="/" className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 ">
             <FaHome className="mr-2" />
             Return to Home
           </Link>
@@ -231,8 +231,8 @@ export default function TicketPage() {
   if (!booking) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-xl shadow-md max-w-lg w-full text-center">
-          <div className="text-amber-500 text-6xl mb-4">
+        <div className="bg-white p-8 rounded-xl max-w-lg w-full text-center">
+          <div className="text-gray-600 text-6xl mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="mx-auto h-16 w-16">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -240,11 +240,11 @@ export default function TicketPage() {
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Booking Not Found</h1>
           <p className="text-gray-600 mb-6">The requested ticket could not be found. Please check your booking ID.</p>
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 justify-center">
-            <Link to="/" className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors">
+            <Link to="/" className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 ">
               <FaHome className="mr-2" />
               Return to Home
             </Link>
-            <Link to="/bookings" className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+            <Link to="/bookings" className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 ">
               View My Bookings
             </Link>
           </div>
@@ -257,11 +257,11 @@ export default function TicketPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
-          <Link to="/" className="flex items-center text-emerald-600 hover:text-emerald-700 transition-colors">
+          <Link to="/" className="flex items-center text-gray-700 hover:text-gray-800 ">
             <FaArrowLeft className="mr-2" />
             Back to Home
           </Link>
-          <Link to="/bookings" className="flex items-center text-emerald-600 hover:text-emerald-700 transition-colors">
+          <Link to="/bookings" className="flex items-center text-gray-700 hover:text-gray-800 ">
             View All Bookings
           </Link>
         </div>
@@ -271,7 +271,7 @@ export default function TicketPage() {
             <button
               onClick={handlePreviousTicket}
               disabled={currentIndex <= 0}
-              className={`p-2 rounded-full ${currentIndex <= 0 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:bg-emerald-100'}`}
+              className={`p-2 rounded-full ${currentIndex <= 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
             >
               <FaArrowLeft className="h-5 w-5" />
             </button>
@@ -281,7 +281,7 @@ export default function TicketPage() {
             <button
               onClick={handleNextTicket}
               disabled={currentIndex >= relatedBookings.length - 1}
-              className={`p-2 rounded-full ${currentIndex >= relatedBookings.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:bg-emerald-100'}`}
+              className={`p-2 rounded-full ${currentIndex >= relatedBookings.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
             >
               <FaArrowRight className="h-5 w-5" />
             </button>

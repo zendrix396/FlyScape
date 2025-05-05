@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaPlane, FaCalendarAlt, FaSearch, FaExchangeAlt } from 'react-icons/fa';
-import GradientText from './GradientText';
 import AnimatedList from './AnimatedList';
 
 export default function FlightSearch({ onSearch }) {
@@ -17,57 +16,29 @@ export default function FlightSearch({ onSearch }) {
   const toRef = useRef(null);
 
   const dummySuggestions = [
-    'Delhi (DEL)',
-    'Mumbai (BOM)',
-    'Bangalore (BLR)',
-    'Chennai (MAA)',
-    'Kolkata (CCU)',
-    'Hyderabad (HYD)',
-    'Ahmedabad (AMD)',
-    'Cochin (COK)',
-    'Pune (PNQ)',
-    'Jaipur (JAI)',
+    'Delhi (DEL)', 'Mumbai (BOM)', 'Bangalore (BLR)', 'Chennai (MAA)',
+    'Kolkata (CCU)', 'Hyderabad (HYD)', 'Ahmedabad (AMD)', 'Cochin (COK)',
+    'Pune (PNQ)', 'Jaipur (JAI)',
   ];
 
-  const handleFromChange = (e) => {
-    const value = e.target.value;
-    setFrom(value);
+  const handleInputChange = (value, isFromField) => {
+    isFromField ? setFrom(value) : setTo(value);
+    
     if (value.trim().length > 1) {
-      // Mock API call for suggestions
       setIsLoading(true);
       setTimeout(() => {
-        const filtered = dummySuggestions.filter(
-          (s) => s.toLowerCase().includes(value.toLowerCase())
+        const filtered = dummySuggestions.filter(s => 
+          s.toLowerCase().includes(value.toLowerCase())
         );
         setSuggestions(filtered);
         setIsLoading(false);
-        setShowFromSuggestions(true);
-        setShowToSuggestions(false);
+        setShowFromSuggestions(isFromField);
+        setShowToSuggestions(!isFromField);
       }, 300);
     } else {
       setSuggestions([]);
-      setShowFromSuggestions(false);
-    }
-  };
-
-  const handleToChange = (e) => {
-    const value = e.target.value;
-    setTo(value);
-    if (value.trim().length > 1) {
-      // Mock API call for suggestions
-      setIsLoading(true);
-      setTimeout(() => {
-        const filtered = dummySuggestions.filter(
-          (s) => s.toLowerCase().includes(value.toLowerCase())
-        );
-        setSuggestions(filtered);
-        setIsLoading(false);
-        setShowToSuggestions(true);
-        setShowFromSuggestions(false);
-      }, 300);
-    } else {
-      setSuggestions([]);
-      setShowToSuggestions(false);
+      setShowFromSuggestions(isFromField ? false : showFromSuggestions);
+      setShowToSuggestions(!isFromField ? false : showToSuggestions);
     }
   };
 
@@ -76,26 +47,10 @@ export default function FlightSearch({ onSearch }) {
       setFrom(suggestion);
       setShowFromSuggestions(false);
       toRef.current.focus();
-    } else if (showToSuggestions) {
+    } else {
       setTo(suggestion);
       setShowToSuggestions(false);
     }
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    onSearch({
-      from,
-      to,
-      date,
-      passengers,
-    });
-  };
-
-  const handleSwapLocations = () => {
-    const temp = from;
-    setFrom(to);
-    setTo(temp);
   };
 
   useEffect(() => {
@@ -109,39 +64,33 @@ export default function FlightSearch({ onSearch }) {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+    <div className="bg-white rounded-lg p-6">
       <div className="mb-6 text-center">
-        <GradientText
-          colors={["#10b981", "#6ee7b7", "#10b981"]}
-          animationSpeed={5}
-          className="text-3xl font-bold"
-        >
-          Search Flights
-        </GradientText>
+        <h2 className="text-3xl font-bold">Search Flights</h2>
         <p className="text-gray-500 mt-2">Find the best deals on flights</p>
       </div>
 
-      <form onSubmit={handleSearchSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        onSearch({ from, to, date, passengers });
+      }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative" ref={fromRef}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">From</label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaPlane className="h-5 w-5 text-gray-400" />
+            <label className="block text-sm font-medium mb-1">From</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <FaPlane className="text-gray-400" />
               </div>
               <input
                 type="text"
-                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 pr-12 py-3 sm:text-sm border-gray-300 rounded-md"
+                className="block w-full pl-10 py-2 border border-gray-300 rounded"
                 placeholder="City or airport"
                 value={from}
-                onChange={handleFromChange}
-                onClick={() => showFromSuggestions && suggestions.length > 0 && setShowFromSuggestions(true)}
+                onChange={(e) => handleInputChange(e.target.value, true)}
               />
             </div>
             {showFromSuggestions && suggestions.length > 0 && (
@@ -149,7 +98,6 @@ export default function FlightSearch({ onSearch }) {
                 <AnimatedList
                   items={suggestions}
                   onItemSelect={handleSuggestionSelect}
-                  className="w-full"
                 />
               </div>
             )}
@@ -157,18 +105,17 @@ export default function FlightSearch({ onSearch }) {
 
           <div className="relative flex" ref={toRef}>
             <div className="flex-grow">
-              <label className="block text-sm font-medium text-gray-700 mb-1">To</label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaPlane className="h-5 w-5 text-gray-400 transform rotate-90" />
+              <label className="block text-sm font-medium mb-1">To</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                  <FaPlane className="text-gray-400 transform rotate-90" />
                 </div>
                 <input
                   type="text"
-                  className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 pr-12 py-3 sm:text-sm border-gray-300 rounded-md"
+                  className="block w-full pl-10 py-2 border border-gray-300 rounded"
                   placeholder="City or airport"
                   value={to}
-                  onChange={handleToChange}
-                  onClick={() => showToSuggestions && suggestions.length > 0 && setShowToSuggestions(true)}
+                  onChange={(e) => handleInputChange(e.target.value, false)}
                 />
               </div>
               {showToSuggestions && suggestions.length > 0 && (
@@ -176,31 +123,28 @@ export default function FlightSearch({ onSearch }) {
                   <AnimatedList
                     items={suggestions}
                     onItemSelect={handleSuggestionSelect}
-                    className="w-full"
                   />
                 </div>
               )}
             </div>
-            <div className="flex items-end ml-2 mb-[2px]">
-              <button
-                type="button"
-                onClick={handleSwapLocations}
-                className="p-3 bg-emerald-100 rounded-md text-emerald-600 hover:bg-emerald-200 transition-colors"
-              >
-                <FaExchangeAlt className="h-5 w-5" />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => { const temp = from; setFrom(to); setTo(temp); }}
+              className="p-2 ml-2 self-end bg-gray-100 rounded text-gray-700"
+            >
+              <FaExchangeAlt />
+            </button>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaCalendarAlt className="h-5 w-5 text-gray-400" />
+            <label className="block text-sm font-medium mb-1">Date</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <FaCalendarAlt className="text-gray-400" />
               </div>
               <input
                 type="date"
-                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 pr-12 py-3 sm:text-sm border-gray-300 rounded-md"
+                className="block w-full pl-10 py-2 border border-gray-300 rounded"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
@@ -209,33 +153,29 @@ export default function FlightSearch({ onSearch }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Passengers</label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <select
-                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full py-3 sm:text-sm border-gray-300 rounded-md"
-                value={passengers}
-                onChange={(e) => setPassengers(parseInt(e.target.value))}
-              >
-                {[1, 2, 3, 4, 5, 6].map((num) => (
-                  <option key={num} value={num}>
-                    {num} {num === 1 ? 'Passenger' : 'Passengers'}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <label className="block text-sm font-medium mb-1">Passengers</label>
+            <select
+              className="block w-full py-2 border border-gray-300 rounded"
+              value={passengers}
+              onChange={(e) => setPassengers(parseInt(e.target.value))}
+            >
+              {[1, 2, 3, 4, 5, 6].map((num) => (
+                <option key={num} value={num}>
+                  {num} {num === 1 ? 'Passenger' : 'Passengers'}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
-        <div className="mt-6">
-          <button
-            type="submit"
-            className="w-full bg-emerald-600 text-white py-3 px-4 rounded-md flex items-center justify-center hover:bg-emerald-700"
-            disabled={!from || !to || !date}
-          >
-            <FaSearch className="mr-2" />
-            Search Flights
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="mt-4 w-full bg-gray-600 text-white py-2 px-4 rounded flex items-center justify-center"
+          disabled={!from || !to || !date}
+        >
+          <FaSearch className="mr-2" />
+          Search Flights
+        </button>
       </form>
     </div>
   );

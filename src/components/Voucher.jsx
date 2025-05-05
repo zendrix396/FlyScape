@@ -260,13 +260,13 @@ export default function Voucher({ booking }) {
       // Footer
       y = pageHeight - 30;
       pdf.setFontSize(9);
-      pdf.setTextColor(107, 114, 128); // Gray-500
+      pdf.setTextColor(100, 100, 100);
       pdf.text('Please arrive at the airport at least 2 hours before departure.', margin, y);
       y += 5;
       pdf.text(`This ticket was issued for ${email} on ${new Date().toLocaleDateString()}.`, margin, y);
       
       // AeroVoyage info at the bottom of the page
-      pdf.setFillColor(16, 185, 129); // Emerald-600
+      pdf.setFillColor(150, 150, 150);
       pdf.rect(0, pageHeight - 10, pageWidth, 10, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.text('AeroVoyage - Your journey begins with us.', margin, pageHeight - 3);
@@ -369,7 +369,7 @@ export default function Voucher({ booking }) {
         </p>
       </div>
 
-      <SpotlightCard className="bg-white rounded-xl shadow-lg border border-emerald-100 p-6" spotlightColor="rgba(16, 185, 129, 0.2)">
+      <SpotlightCard className="bg-white rounded-xl border border-gray-100 p-6" spotlightColor="rgba(16, 185, 129, 0.2)">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-1">
@@ -380,7 +380,7 @@ export default function Voucher({ booking }) {
             </p>
           </div>
           {passengerNumber && totalPassengers && totalPassengers > 1 && (
-            <div className="mt-3 md:mt-0 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium">
+            <div className="mt-3 md:mt-0 px-3 py-1 bg-gray-100 text-gray-900 rounded-full text-sm font-medium">
               Passenger {passengerNumber} of {totalPassengers}
             </div>
           )}
@@ -393,7 +393,7 @@ export default function Voucher({ booking }) {
           transition={{ duration: 0.5 }}
         >
           {/* Header */}
-          <div className="bg-emerald-600 text-white p-4">
+          <div className="bg-gray-600 text-white p-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center">
                 <FaPlane className="h-6 w-6 mr-2" />
@@ -412,7 +412,7 @@ export default function Voucher({ booking }) {
               <div>
                 <div className="text-sm text-gray-500">Passenger</div>
                 <div className="text-lg font-semibold flex items-center">
-                  <FaUser className="h-4 w-4 mr-2 text-emerald-500" />
+                  <FaUser className="h-4 w-4 mr-2 text-gray-700" />
                   {passengerName}
                 </div>
               </div>
@@ -433,7 +433,7 @@ export default function Voucher({ booking }) {
                 <div className="flex items-center justify-center w-full md:w-auto mb-4 md:mb-0">
                   <div className="w-24 h-[2px] bg-gray-300 hidden md:block"></div>
                   <div className="mx-4">
-                    <FaPlane className="h-8 w-8 text-emerald-500 transform rotate-90" />
+                    <FaPlane className="h-8 w-8 text-gray-700 transform rotate-90" />
                   </div>
                   <div className="w-24 h-[2px] bg-gray-300 hidden md:block"></div>
                 </div>
@@ -476,11 +476,11 @@ export default function Voucher({ booking }) {
             whileTap={{ scale: 0.95 }}
             onClick={handleDownload}
             disabled={isDownloading}
-            className="flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors disabled:opacity-70"
+            className="flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700  disabled:opacity-70"
           >
             {isDownloading ? (
               <>
-                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full  mr-2"></div>
                 Processing...
               </>
             ) : (
@@ -496,11 +496,11 @@ export default function Voucher({ booking }) {
             whileTap={{ scale: 0.95 }}
             onClick={() => handleSendEmail()}
             disabled={isSendingEmail}
-            className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-70"
+            className="flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700  disabled:opacity-70"
           >
             {isSendingEmail ? (
               <>
-                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full  mr-2"></div>
                 Sending...
               </>
             ) : emailSent ? (
@@ -520,7 +520,7 @@ export default function Voucher({ booking }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleShare}
-            className="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 "
           >
             <FaShareAlt className="mr-2" />
             Share
@@ -530,7 +530,7 @@ export default function Voucher({ booking }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleBookAgain}
-            className="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 "
           >
             <FaPlane className="mr-2" />
             Book Again

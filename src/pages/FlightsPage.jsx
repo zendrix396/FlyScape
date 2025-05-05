@@ -126,7 +126,7 @@ export default function FlightsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mx-auto"></div>
+          <div className=" rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading flights...</p>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function FlightsPage() {
           <FlightSearch onSearch={handleSearch} />
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6">
+        <div className="bg-white rounded-xl p-6">
           <FlightList 
             flights={flights} 
             onFlightSelect={handleFlightSelect} 

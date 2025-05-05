@@ -107,7 +107,7 @@ export default function BookingPage() {
           <p className="mt-2 text-gray-600">You need to be logged in to book flights</p>
           <Link
             to="/login"
-            className="mt-4 inline-block px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+            className="mt-4 inline-block px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
           >
             Go to Login
           </Link>
@@ -186,12 +186,12 @@ export default function BookingPage() {
     return (
       <div className="min-h-screen flex justify-center items-center bg-gray-50">
         <div className="animate-pulse flex space-x-4">
-          <div className="rounded-full bg-emerald-200 h-12 w-12"></div>
+          <div className="rounded-full bg-gray-200 h-12 w-12"></div>
           <div className="flex-1 space-y-4 py-1">
-            <div className="h-4 bg-emerald-200 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
             <div className="space-y-2">
-              <div className="h-4 bg-emerald-200 rounded"></div>
-              <div className="h-4 bg-emerald-200 rounded w-5/6"></div>
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
             </div>
           </div>
         </div>
@@ -202,12 +202,12 @@ export default function BookingPage() {
   if (error) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 max-w-lg w-full">
+        <div className="bg-gray-50 border-l-4 border-gray-400 p-4 mb-6 max-w-lg w-full">
           <p className="text-red-700">{error}</p>
         </div>
         <button
           onClick={() => navigate('/flights')}
-          className="flex items-center text-emerald-600 hover:text-emerald-700"
+          className="flex items-center text-gray-700 hover:text-gray-800"
         >
           <FaArrowLeft className="mr-2" />
           Back to flight search
@@ -222,13 +222,13 @@ export default function BookingPage() {
       <div className="min-h-screen bg-gray-50 pt-8 pb-12">
         <div className="max-w-4xl mx-auto px-4">
           {bookings.length > 1 && (
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+            <div className="bg-white rounded-lg p-4 mb-6">
               <h2 className="text-xl font-semibold text-center mb-2">Passenger Tickets</h2>
               <div className="flex justify-between items-center">
                 <button 
                   onClick={handlePrevTicket} 
                   disabled={currentTicketIndex === 0}
-                  className={`px-4 py-2 rounded-md ${currentTicketIndex === 0 ? 'bg-gray-200 text-gray-500' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}`}
+                  className={`px-4 py-2 rounded-md ${currentTicketIndex === 0 ? 'bg-gray-200 text-gray-500' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
                 >
                   Previous Ticket
                 </button>
@@ -238,7 +238,7 @@ export default function BookingPage() {
                 <button 
                   onClick={handleNextTicket} 
                   disabled={currentTicketIndex === bookings.length - 1}
-                  className={`px-4 py-2 rounded-md ${currentTicketIndex === bookings.length - 1 ? 'bg-gray-200 text-gray-500' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}`}
+                  className={`px-4 py-2 rounded-md ${currentTicketIndex === bookings.length - 1 ? 'bg-gray-200 text-gray-500' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
                 >
                   Next Ticket
                 </button>
@@ -249,7 +249,7 @@ export default function BookingPage() {
           <div className="mt-6 text-center">
             <button
               onClick={() => navigate('/flights')}
-              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 inline-flex items-center"
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 inline-flex items-center"
             >
               <FaArrowLeft className="mr-2" />
               Back to Flights
@@ -266,7 +266,7 @@ export default function BookingPage() {
         <div className="mb-8">
           <button
             onClick={() => navigate('/flights')}
-            className="flex items-center text-emerald-600 hover:text-emerald-700 mb-4"
+            className="flex items-center text-gray-700 hover:text-gray-800 mb-4"
           >
             <FaArrowLeft className="mr-2" />
             Back to flight list
@@ -285,7 +285,7 @@ export default function BookingPage() {
             </h2>
           </div>
 
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+          <div className="bg-white rounded-lg p-6 mb-6">
             <div className="flex flex-col md:flex-row justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">{flight?.airline}</h3>
@@ -295,10 +295,10 @@ export default function BookingPage() {
                 {flight?.priceIncreased && (
                   <p className="text-sm line-through text-gray-500">₹{flight?.originalPrice}</p>
                 )}
-                <p className="text-2xl font-bold text-emerald-600">₹{flight?.price}</p>
+                <p className="text-2xl font-bold text-gray-700">₹{flight?.price}</p>
                 <p className="text-sm text-gray-500">per passenger</p>
                 {flight?.priceIncreased && (
-                  <p className="text-xs text-red-500">Price increased due to high demand</p>
+                  <p className="text-xs text-gray-600">Price increased due to high demand</p>
                 )}
               </div>
             </div>
@@ -343,7 +343,7 @@ export default function BookingPage() {
             <p className="text-gray-600">Flight data is not available. Please go back to search page.</p>
             <button
               onClick={() => navigate('/flights')}
-              className="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-md"
+              className="mt-4 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
             >
               Back to Flights
             </button>
