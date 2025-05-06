@@ -2,28 +2,57 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow users to read and write their own data
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+        (request.auth.token.admin == true || 
+         request.auth.token.email == 'adityasenpai396@gmail.com');
+    }
+    
+    // Helper function to check specific admin user
+    function isSpecificAdmin() {
+      return request.auth != null && 
+        (request.auth.token.email == 'adityasenpai396@gmail.com');
+    }
+    
+    // Allow read access to everything for the app to function properly
+    match /{document=**} {
+      allow read: if true;
+    }
+    
+    // Allow users to create and write their own data
     match /users/{userId} {
       allow create: if request.auth != null;
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
     
-    // Allow all users to read bookings but only authenticated users to create/update their own
+    // Allow authenticated users to create bookings
     match /bookings/{bookingId} {
-      // Allow anyone to read booking data for pricing and ticket viewing
-      allow read: if true;
-      
-      // Allow authenticated users to create bookings
       allow create: if request.auth != null;
-      
-      // Allow users to update and delete only their own bookings
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow update, delete: if request.auth != null && 
+        (request.auth.uid == resource.data.userId || isAdmin());
     }
     
-    // Allow all users to read available flights
+    // Allow all operations on flight prices
+    match /flightPrices/{flightId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Only admins can write to flights collection
     match /flights/{flightId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if isAdmin();
+    }
+    
+    // Allow specific admin to perform all operations
+    match /flights/{flightId} {
+      allow read, write, create, update, delete: if isSpecificAdmin();
+    }
+    
+    // Allow batch writes for the specific admin
+    match /flights/{document=**} {
+      allow read, write, create, update, delete: if isSpecificAdmin();
     }
   }
 } 

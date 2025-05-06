@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlane, FaBars, FaTimes, FaUser, FaSignOutAlt, FaWallet, FaBug } from 'react-icons/fa';
+import { FaPlane, FaBars, FaTimes, FaUser, FaSignOutAlt, FaWallet, FaTachometerAlt } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Navbar() {
@@ -11,6 +10,15 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logout, userProfile } = useAuth();
+  
+  // Check if the user is an admin
+  const isAdmin = userProfile?.role === 'admin' || 
+                  userProfile?.isAdmin === true || 
+                  userProfile?.email === 'admin@example.com' ||
+                  userProfile?.email === 'adityasenpai396@gmail.com';
+  
+  console.log("User email:", userProfile?.email);
+  console.log("Is admin:", isAdmin);
   
   useEffect(() => {
     const handleScroll = () => {
@@ -94,11 +102,7 @@ export default function Navbar() {
               >
                 {link.name}
                 {location.pathname === link.path && (
-                  <motion.div
-                    layoutId="navbar-indicator"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500"
-                    transition={{ duration: 0.3 }}
-                  />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
                 )}
                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
               </Link>
@@ -131,12 +135,8 @@ export default function Navbar() {
                 
                 {/* Profile dropdown */}
                 {isProfileOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-emerald-50"
+                  <div 
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-emerald-50 opacity-100 transform-none"
                   >
                     <Link
                       to="/profile"
@@ -154,14 +154,16 @@ export default function Navbar() {
                       <FaPlane className="inline mr-2 text-emerald-500" />
                       My Bookings
                     </Link>
-                    <Link
-                      to="/debug"
-                      className="block px-4 py-2 text-sm text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 border-t border-gray-100"
-                      onClick={() => setIsProfileOpen(false)}
-                    >
-                      <FaBug className="inline mr-2 text-emerald-500" />
-                      Troubleshoot
-                    </Link>
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <FaTachometerAlt className="inline mr-2 text-emerald-500" />
+                        Admin Dashboard
+                      </Link>
+                    )}
                     <div className="border-t border-gray-100 my-1"></div>
                     <button
                       onClick={handleLogout}
@@ -170,7 +172,7 @@ export default function Navbar() {
                       <FaSignOutAlt className="inline mr-2 text-emerald-500" />
                       Sign Out
                     </button>
-                  </motion.div>
+                  </div>
                 )}
               </div>
             </div>
@@ -209,80 +211,89 @@ export default function Navbar() {
       </div>
       
       {/* Mobile Navigation */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-white border-t border-emerald-50"
-          >
-            <div className="container mx-auto px-4 py-3 space-y-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    location.pathname === link.path
-                      ? 'bg-emerald-50 text-emerald-600'
-                      : 'text-gray-700 hover:bg-emerald-50 hover:text-emerald-600'
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
-              
-              {currentUser && userProfile ? (
-                <>
-                  <div className="border-t border-gray-100 my-2 pt-2">
-                    <div className="flex items-center justify-between px-3 py-2">
-                      <span className="text-gray-600">Wallet Balance</span>
-                      <span className="font-medium text-emerald-600">₹{getWalletBalance()}</span>
-                    </div>
+      {isMenuOpen && (
+        <div 
+          className="md:hidden bg-white border-t border-emerald-50"
+          style={{
+            opacity: 1,
+            height: 'auto',
+            transition: 'opacity 0.3s, height 0.3s'
+          }}
+        >
+          <div className="container mx-auto px-4 py-3 space-y-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  location.pathname === link.path
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : 'text-gray-700 hover:bg-emerald-50 hover:text-emerald-600'
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
+            
+            {currentUser && userProfile ? (
+              <>
+                <div className="border-t border-gray-100 my-2 pt-2">
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <span className="text-gray-600">Wallet Balance</span>
+                    <span className="font-medium text-emerald-600">₹{getWalletBalance()}</span>
+                  </div>
+                  <Link
+                    to="/profile"
+                    className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FaUser className="mr-3 text-emerald-500" />
+                    Your Profile
+                  </Link>
+                  {isAdmin && (
                     <Link
-                      to="/profile"
+                      to="/admin"
                       className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <FaUser className="mr-3 text-emerald-500" />
-                      Your Profile
+                      <FaTachometerAlt className="mr-3 text-emerald-500" />
+                      Admin Dashboard
                     </Link>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
-                    >
-                      <FaSignOutAlt className="mr-3 text-emerald-500" />
-                      Sign Out
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="border-t border-gray-100 my-2 pt-2 flex flex-col space-y-2">
-                  <Link
-                    to="/login"
-                    className="px-3 py-2 rounded-md text-base font-medium text-emerald-600 hover:bg-emerald-50"
-                    onClick={() => setIsMenuOpen(false)}
+                  )}
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
                   >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/signup"
-                    className="px-3 py-2 bg-emerald-600 text-white text-base font-medium rounded-md hover:bg-emerald-700"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Sign Up
-                  </Link>
+                    <FaSignOutAlt className="mr-3 text-emerald-500" />
+                    Sign Out
+                  </button>
                 </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </>
+            ) : (
+              <div className="border-t border-gray-100 my-2 pt-2 flex flex-col space-y-2">
+                <Link
+                  to="/login"
+                  className="px-3 py-2 rounded-md text-base font-medium text-emerald-600 hover:bg-emerald-50"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="px-3 py-2 bg-emerald-600 text-white text-base font-medium rounded-md hover:bg-emerald-700"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 } 

@@ -31,12 +31,19 @@ export function AuthProvider({ children }) {
       console.log("Creating user profile for:", uid);
       const userDocRef = doc(db, 'users', uid);
       
+      // Check if this is the admin email
+      const isAdmin = userData.email === 'adityasenpai396@gmail.com' || 
+                     userData.email === 'admin@example.com';
+      
       // Create base wallet with default balance
       const newUserData = {
         ...userData,
         walletBalance: 50000,
         createdAt: new Date().toISOString(),
+        isAdmin: isAdmin, // Set admin flag based on email
       };
+      
+      console.log("Setting up user profile with admin status:", isAdmin);
       
       await setDoc(userDocRef, newUserData);
       return newUserData;
@@ -200,6 +207,37 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Explicitly update admin status for a user
+  async function updateAdminStatus(uid, email) {
+    try {
+      if (!uid || !email) return;
+      
+      const isAdmin = email === 'adityasenpai396@gmail.com' || 
+                     email === 'admin@example.com';
+                       
+      const userDocRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        // Only update if needed
+        if (userDoc.data().isAdmin !== isAdmin) {
+          console.log(`Updating admin status for ${email} to ${isAdmin}`);
+          await updateDoc(userDocRef, { isAdmin });
+          
+          // Update local state if this is the current user
+          if (currentUser && currentUser.uid === uid) {
+            setUserProfile(prev => ({
+              ...prev,
+              isAdmin
+            }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error updating admin status:', error);
+    }
+  }
+
   // Check for redirect results on initial load
   useEffect(() => {
     const checkRedirectResult = async () => {
@@ -251,6 +289,9 @@ export function AuthProvider({ children }) {
             setUserProfile(newProfile);
           } else {
             setUserProfile(profile);
+            
+            // Check and update admin status
+            await updateAdminStatus(user.uid, user.email);
           }
         } catch (error) {
           console.error("Error fetching user profile:", error);
@@ -275,7 +316,8 @@ export function AuthProvider({ children }) {
     logout,
     loginWithGoogle,
     resetPassword,
-    updateUserWallet
+    updateUserWallet,
+    updateAdminStatus
   };
 
   return (

@@ -4,12 +4,19 @@ import { Link } from 'react-router-dom';
 import { checkFirebasePermissions, getPermissionFixGuidance } from '../utils/permissionsCheck';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { auth } from '../firebase/config';
+import { getIdTokenResult, getIdToken } from 'firebase/auth';
+
+const ADMIN_EMAIL = 'adityasenpai396@gmail.com'; // Replace with your actual email
 
 export default function DebugPage() {
   const { currentUser, userProfile } = useAuth();
   const [testResults, setTestResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fixAttempted, setFixAttempted] = useState(false);
+  const [tokenDetails, setTokenDetails] = useState(null);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   const runPermissionTests = async () => {
     setLoading(true);
@@ -46,6 +53,86 @@ export default function DebugPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const checkAdminStatus = async () => {
+    if (!currentUser) {
+      setError('You need to be logged in to check admin status');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const idTokenResult = await getIdTokenResult(currentUser);
+      setTokenDetails({
+        claims: idTokenResult.claims,
+        authTime: idTokenResult.authTime,
+        expirationTime: idTokenResult.expirationTime,
+        issuedAtTime: idTokenResult.issuedAtTime,
+        signInProvider: idTokenResult.signInProvider,
+        email: currentUser.email,
+        uid: currentUser.uid
+      });
+    } catch (err) {
+      console.error("Error checking token:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const makeAdmin = async () => {
+    if (!currentUser) {
+      setError('You need to be logged in to set admin status');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      setSuccess(null);
+      
+      // Set admin in local storage
+      localStorage.setItem('isAdminUser', 'true');
+      
+      // If the current user matches our predefined admin, show special message
+      const isSpecificAdmin = currentUser.email === ADMIN_EMAIL;
+      
+      // Force token refresh
+      await auth.currentUser.getIdToken(true);
+      
+      const message = isSpecificAdmin
+        ? `Admin status granted to ${currentUser.email} which is the predefined admin account.`
+        : 'Admin status set in local storage. Note: In production, admin claims must be set from Firebase Admin SDK on the backend.';
+      
+      setSuccess(message);
+      
+      // Refresh token details
+      await checkAdminStatus();
+    } catch (err) {
+      console.error("Error setting admin:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAdminStatusMessage = () => {
+    if (!currentUser) return null;
+    
+    const isSpecificAdmin = currentUser.email === ADMIN_EMAIL;
+    
+    if (isSpecificAdmin) {
+      return (
+        <div className="bg-green-100 text-green-700 p-4 rounded-md mt-4">
+          <p className="font-medium">✅ This account ({currentUser.email}) is the designated admin account.</p>
+          <p className="mt-2">You should have full access to all admin functionality.</p>
+        </div>
+      );
+    }
+    
+    return null;
   };
 
   return (
@@ -187,6 +274,57 @@ export default function DebugPage() {
                 </ol>
               </div>
             </div>
+          </div>
+          
+          <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+            <h2 className="text-lg font-medium text-gray-900">Admin Status</h2>
+            <div className="mt-3 space-y-4">
+              <button
+                onClick={checkAdminStatus}
+                disabled={loading || !currentUser}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+              >
+                Check Admin Status
+              </button>
+              
+              <button
+                onClick={makeAdmin}
+                disabled={loading || !currentUser}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:bg-gray-400 transition-colors"
+              >
+                Set Admin Status (Dev Only)
+              </button>
+            </div>
+            
+            {getAdminStatusMessage()}
+            
+            {error && (
+              <div className="bg-red-100 text-red-700 p-4 rounded-md mt-4">
+                {error}
+              </div>
+            )}
+            
+            {success && (
+              <div className="bg-green-100 text-green-700 p-4 rounded-md mt-4">
+                {success}
+              </div>
+            )}
+            
+            {loading && (
+              <div className="text-center py-4">
+                <div className="animate-spin inline-block w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full"></div>
+                <p className="mt-2 text-gray-600">Loading...</p>
+              </div>
+            )}
+            
+            {tokenDetails && (
+              <div className="mt-4">
+                <h3 className="text-lg font-medium text-gray-700 mb-2">Token Details</h3>
+                <pre className="bg-gray-50 p-4 rounded-md overflow-auto max-h-60">
+                  {JSON.stringify(tokenDetails, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
         </div>
       </div>

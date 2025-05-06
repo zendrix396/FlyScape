@@ -24,19 +24,104 @@ export default function Voucher({ booking }) {
     }
   }, []);
   
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+  const formatDate = (dateInput) => {
+    if (!dateInput) return 'N/A';
+    
+    try {
+      let date;
+      
+      // Check if it's a Firestore timestamp
+      if (typeof dateInput === 'object' && dateInput !== null) {
+        if (dateInput.seconds) {
+          // Firestore timestamp
+          date = new Date(dateInput.seconds * 1000);
+        } else if (dateInput instanceof Date) {
+          // Regular Date object
+          date = dateInput;
+        } else if (dateInput.displayDepartureDate || dateInput.displayArrivalDate) {
+          // Already formatted object, return the display value
+          return dateInput.displayDepartureDate || dateInput.displayArrivalDate;
+        } else {
+          // Try to use it as a Date constructor
+          date = new Date(dateInput);
+        }
+      } else if (typeof dateInput === 'string') {
+        // String date
+        date = new Date(dateInput);
+      } else if (typeof dateInput === 'number') {
+        // Timestamp in milliseconds
+        date = new Date(dateInput);
+      }
+      
+      // Check if date is valid
+      if (date instanceof Date && !isNaN(date)) {
+        return date.toLocaleDateString('en-IN', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        });
+      } else {
+        console.error("Invalid date format:", dateInput);
+        // Check if the flight has pre-formatted dates
+        if (flight && flight.displayDepartureDate) return flight.displayDepartureDate;
+        if (flight && flight.displayArrivalDate) return flight.displayArrivalDate;
+        return 'Invalid Date';
+      }
+    } catch (error) {
+      console.error("Error formatting date:", error, dateInput);
+      return 'Date Error';
+    }
   };
   
-  const formatTime = (timeString) => {
-    const date = new Date(timeString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (timeInput) => {
+    if (!timeInput) return 'N/A';
+    
+    try {
+      let time;
+      
+      // Check if we already have formatted time from the server
+      if (typeof timeInput === 'object' && timeInput !== null) {
+        if (timeInput.displayDepartureTime || timeInput.displayArrivalTime) {
+          return timeInput.displayDepartureTime || timeInput.displayArrivalTime;
+        }
+        
+        if (timeInput.seconds) {
+          // Firestore timestamp
+          time = new Date(timeInput.seconds * 1000);
+        } else if (timeInput instanceof Date) {
+          // Regular Date object
+          time = timeInput;
+        } else {
+          // Try to create date from object
+          time = new Date(timeInput);
+        }
+      } else if (typeof timeInput === 'string') {
+        // Check if it's already a formatted time (like "10:30 AM")
+        if (/^\d{1,2}:\d{2}(?: [AP]M)?$/.test(timeInput)) {
+          return timeInput;
+        }
+        // String date
+        time = new Date(timeInput);
+      } else if (typeof timeInput === 'number') {
+        // Timestamp in milliseconds
+        time = new Date(timeInput);
+      }
+      
+      // Check if date is valid
+      if (time instanceof Date && !isNaN(time)) {
+        return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } else {
+        console.error("Invalid time format:", timeInput);
+        // Check if the flight has pre-formatted times
+        if (flight && flight.displayDepartureTime) return flight.displayDepartureTime;
+        if (flight && flight.displayArrivalTime) return flight.displayArrivalTime;
+        return '--:--';
+      }
+    } catch (error) {
+      console.error("Error formatting time:", error, timeInput);
+      return '--:--';
+    }
   };
   
   const handleDownload = async () => {
@@ -252,31 +337,37 @@ export default function Voucher({ booking }) {
         }
       }
       
-      // Booking ID text under barcode
+      // Add booking ID under barcode
       pdf.setFontSize(12);
-      pdf.setTextColor(17, 24, 39); // Gray-900
-      pdf.text(bookingId, barcodeX + (barcodeWidth / 2) - 20, barcodeY + barcodeHeight + 7);
+      pdf.setTextColor(17, 24, 39);
+      const bookingIdText = bookingId || 'FLYTKT12345';
+      const bookingIdWidth = pdf.getStringUnitWidth(bookingIdText) * 12 / pdf.internal.scaleFactor;
+      pdf.text(bookingIdText, (pageWidth / 2) - (bookingIdWidth / 2), barcodeY + barcodeHeight + 10);
       
-      // Footer
+      // Add bottom footer with instructions
       y = pageHeight - 30;
-      pdf.setFontSize(9);
-      pdf.setTextColor(107, 114, 128); // Gray-500
-      pdf.text('Please arrive at the airport at least 2 hours before departure.', margin, y);
-      y += 5;
-      pdf.text(`This ticket was issued for ${email} on ${new Date().toLocaleDateString()}.`, margin, y);
+      pdf.setFontSize(10);
+      pdf.setTextColor(107, 114, 128);
+      pdf.text('Please arrive at the airport at least 2 hours before the scheduled departure time.', margin, y);
+      pdf.text('Present this boarding pass along with your ID at the check-in counter.', margin, y + 5);
+      pdf.text('This is a digital boarding pass and is valid for travel.', margin, y + 10);
       
-      // AeroVoyage info at the bottom of the page
-      pdf.setFillColor(16, 185, 129); // Emerald-600
-      pdf.rect(0, pageHeight - 10, pageWidth, 10, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.text('AeroVoyage - Your journey begins with us.', margin, pageHeight - 3);
+      // Add company footer
+      pdf.setDrawColor(229, 231, 235); // #e5e7eb gray-200
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(107, 114, 128);
+      pdf.text('AeroVoyage - Your journey, our priority', margin, pageHeight - 8);
+      pdf.text('www.aerovoyage.com', pageWidth - margin - 40, pageHeight - 8);
       
       // Save the PDF
-      pdf.save(`AeroVoyage-Ticket-${bookingId}.pdf`);
+      pdf.save(`AeroVoyage_Boarding_Pass_${bookingId || 'Ticket'}.pdf`);
+      
+      setIsDownloading(false);
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Failed to download ticket. Please try again later.');
-    } finally {
+      console.error('Error downloading ticket:', error);
       setIsDownloading(false);
     }
   };
