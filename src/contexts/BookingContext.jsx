@@ -18,6 +18,7 @@ export function BookingProvider({ children }) {
   const [wallet, setWallet] = useState(50000); // Starting with 50,000 as specified in requirements
   const [searchHistory, setSearchHistory] = useState({});
   const [bookingHistory, setBookingHistory] = useState({});
+  const [priceIncreaseTimes, setPriceIncreaseTimes] = useState({});
 
   // Load data from localStorage on component mount
   useEffect(() => {
@@ -25,11 +26,19 @@ export function BookingProvider({ children }) {
     const storedWallet = localStorage.getItem('wallet');
     const storedSearchHistory = localStorage.getItem('searchHistory');
     const storedBookingHistory = localStorage.getItem('bookingHistory');
+    const storedPriceIncreaseTimes = localStorage.getItem('priceIncreaseTimes');
 
     if (storedBookings) setBookings(JSON.parse(storedBookings));
     if (storedWallet) setWallet(parseInt(storedWallet));
     if (storedSearchHistory) setSearchHistory(JSON.parse(storedSearchHistory));
     if (storedBookingHistory) setBookingHistory(JSON.parse(storedBookingHistory));
+    if (storedPriceIncreaseTimes) {
+      try {
+        setPriceIncreaseTimes(JSON.parse(storedPriceIncreaseTimes));
+      } catch (error) {
+        console.error('Error parsing stored price increase times:', error);
+      }
+    }
   }, []);
 
   // Save data to localStorage whenever they change
@@ -49,6 +58,10 @@ export function BookingProvider({ children }) {
     localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
   }, [bookingHistory]);
 
+  useEffect(() => {
+    localStorage.setItem('priceIncreaseTimes', JSON.stringify(priceIncreaseTimes));
+  }, [priceIncreaseTimes]);
+
   // Check if a flight price should be increased based on search and booking history
   const shouldIncreasePriceBySearchHistory = async (flightId) => {
     if (!flightId) {
@@ -60,6 +73,24 @@ export function BookingProvider({ children }) {
       const now = new Date();
       const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
       const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+      
+      // First check if we already have an active price increase for this flight
+      if (priceIncreaseTimes[flightId]) {
+        const increaseTime = new Date(priceIncreaseTimes[flightId]);
+        // If the price increase was set less than 10 minutes ago, maintain it
+        if (now.getTime() - increaseTime.getTime() < 10 * 60 * 1000) {
+          console.log(`Flight ${flightId} has an active price increase set ${Math.round((now.getTime() - increaseTime.getTime()) / 1000 / 60)} minutes ago. Maintaining price increase.`);
+          return true;
+        } else {
+          // Price increase has expired, remove it from state
+          console.log(`Flight ${flightId} price increase has expired. Resetting.`);
+          setPriceIncreaseTimes(prev => {
+            const newState = { ...prev };
+            delete newState[flightId];
+            return newState;
+          });
+        }
+      }
       
       // Get search history for this specific flight
       const flightSearchHistory = searchHistory[flightId] || [];
@@ -124,6 +155,14 @@ export function BookingProvider({ children }) {
       
       // Should increase price if there are 3 or more activities in the last 5 minutes
       const shouldIncrease = totalRecentActivity >= 3;
+      
+      // If we should increase the price, store the current time
+      if (shouldIncrease) {
+        setPriceIncreaseTimes(prev => ({
+          ...prev,
+          [flightId]: now.toISOString()
+        }));
+      }
       
       // For debugging
       console.log(`Flight ${flightId} activity: ${uniqueRecentSearchMinutes} unique searches, ${recentBookingsCount} Firestore bookings, ${recentLocalBookings.length} local bookings. Total: ${totalRecentActivity}. Increase price: ${shouldIncrease}`);

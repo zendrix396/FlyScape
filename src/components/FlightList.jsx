@@ -1,25 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import FlightCard from './FlightCard';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaFilter, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
+import { FaFilter, FaSortAmountDown, FaSortAmountUp, FaBug } from 'react-icons/fa';
+import { formatAirportForDisplay } from '../utils/airportUtil';
+import AnimatedList from './AnimatedList';
 
-export default function FlightList({ flights, onFlightSelect, searchParams }) {
+export default function FlightList({ flights = [], loading = false, error = null, searchParams, onFlightSelect, onSelect }) {
   const [selectedFlightId, setSelectedFlightId] = useState(null);
   const [filteredFlights, setFilteredFlights] = useState([]);
   const [sortCriteria, setSortCriteria] = useState('price');
   const [sortDirection, setSortDirection] = useState('asc');
   const [filters, setFilters] = useState({
     airlines: [],
-    priceRange: { min: 0, max: 5000 },
+    priceRange: { min: 0, max: 15000 },
     departureTime: { min: 0, max: 24 }
   });
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [showRawData, setShowRawData] = useState(false);
 
   // Get unique airlines
-  const airlines = [...new Set(flights.map(f => f.airline))];
+  const airlines = [...new Set(flights.map(f => f.airline || 'Unknown'))];
 
   // Apply filters
   useEffect(() => {
+    // If there are no flights to filter, set filtered flights to empty array
+    if (!flights || flights.length === 0) {
+      setFilteredFlights([]);
+      return;
+    }
+    
     let filtered = [...flights];
 
     // Apply airline filter
@@ -28,25 +37,94 @@ export default function FlightList({ flights, onFlightSelect, searchParams }) {
     }
 
     // Apply price filter
-    filtered = filtered.filter(
-      f => f.price >= filters.priceRange.min && f.price <= filters.priceRange.max
-    );
-
-    // Apply departure time filter
     filtered = filtered.filter(f => {
-      const hour = new Date(f.departureTime).getHours();
-      return hour >= filters.departureTime.min && hour <= filters.departureTime.max;
+      // Ensure price is a number
+      const price = typeof f.price === 'string' ? parseFloat(f.price) : Number(f.price);
+      return !isNaN(price) && price >= filters.priceRange.min && price <= filters.priceRange.max;
+    });
+
+    // Apply departure time filter - handle different timestamp formats
+    filtered = filtered.filter(f => {
+      try {
+        let departureDate;
+        
+        // Handle different timestamp formats from Firestore
+        if (f.departureTime && typeof f.departureTime === 'object' && f.departureTime.seconds) {
+          // Firestore Timestamp object
+          departureDate = new Date(f.departureTime.seconds * 1000);
+        } else if (f.departureTime && typeof f.departureTime === 'string') {
+          // String format
+          departureDate = new Date(f.departureTime);
+        } else if (f.departureTime instanceof Date) {
+          // Already a Date object
+          departureDate = f.departureTime;
+        } else {
+          return true; // Include it anyway
+        }
+        
+        if (isNaN(departureDate.getTime())) {
+          return true; // Include flights with invalid dates rather than filtering them out
+        }
+        
+        const hour = departureDate.getHours();
+        return hour >= filters.departureTime.min && hour <= filters.departureTime.max;
+      } catch (error) {
+        return true; // If error, include the flight
+      }
     });
 
     // Sort flights
     filtered.sort((a, b) => {
       let comparison = 0;
-      if (sortCriteria === 'price') {
-        comparison = a.price - b.price;
-      } else if (sortCriteria === 'duration') {
-        comparison = a.duration - b.duration;
-      } else if (sortCriteria === 'departureTime') {
-        comparison = new Date(a.departureTime) - new Date(b.departureTime);
+      try {
+        if (sortCriteria === 'price') {
+          const aPrice = typeof a.price === 'string' ? parseFloat(a.price) : Number(a.price);
+          const bPrice = typeof b.price === 'string' ? parseFloat(b.price) : Number(b.price);
+          comparison = aPrice - bPrice;
+        } else if (sortCriteria === 'duration') {
+          // Duration might be stored in different formats
+          let aDuration, bDuration;
+          
+          // Check if duration is a string like "2h 30m"
+          if (typeof a.duration === 'string' && a.duration.includes('h')) {
+            const matches = a.duration.match(/(\d+)h\s*(\d*)/);
+            const hours = matches ? parseInt(matches[1]) : 0;
+            const minutes = matches && matches[2] ? parseInt(matches[2]) : 0;
+            aDuration = hours * 60 + minutes;
+          } else {
+            aDuration = Number(a.duration);
+          }
+          
+          if (typeof b.duration === 'string' && b.duration.includes('h')) {
+            const matches = b.duration.match(/(\d+)h\s*(\d*)/);
+            const hours = matches ? parseInt(matches[1]) : 0;
+            const minutes = matches && matches[2] ? parseInt(matches[2]) : 0;
+            bDuration = hours * 60 + minutes;
+          } else {
+            bDuration = Number(b.duration);
+          }
+          
+          comparison = aDuration - bDuration;
+        } else if (sortCriteria === 'departureTime') {
+          // Handle different timestamp formats
+          let aDepartureTime, bDepartureTime;
+          
+          if (a.departureTime && typeof a.departureTime === 'object' && a.departureTime.seconds) {
+            aDepartureTime = a.departureTime.seconds * 1000;
+          } else {
+            aDepartureTime = new Date(a.departureTime).getTime();
+          }
+          
+          if (b.departureTime && typeof b.departureTime === 'object' && b.departureTime.seconds) {
+            bDepartureTime = b.departureTime.seconds * 1000;
+          } else {
+            bDepartureTime = new Date(b.departureTime).getTime();
+          }
+          
+          comparison = aDepartureTime - bDepartureTime;
+        }
+      } catch (error) {
+        return 0;
       }
 
       return sortDirection === 'asc' ? comparison : -comparison;
@@ -55,9 +133,14 @@ export default function FlightList({ flights, onFlightSelect, searchParams }) {
     setFilteredFlights(filtered);
   }, [flights, filters, sortCriteria, sortDirection]);
 
+  // Handle flight selection
   const handleFlightSelect = (flight) => {
     setSelectedFlightId(flight.id);
-    onFlightSelect(flight);
+    if (onSelect) {
+      onSelect(flight);
+    } else if (onFlightSelect) {
+      onFlightSelect(flight);
+    }
   };
 
   const toggleFilterMenu = () => {
@@ -101,171 +184,74 @@ export default function FlightList({ flights, onFlightSelect, searchParams }) {
     }));
   };
 
-  return (
-    <div className="w-full">
-      <div className="mb-6 sticky top-0 z-10 bg-white p-4 rounded-lg shadow-md">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div className="mb-4 md:mb-0">
-            <h2 className="text-xl font-bold text-gray-800">
-              {searchParams.from} to {searchParams.to}
-            </h2>
-            <p className="text-gray-500 text-sm">
-              {searchParams.date} · {searchParams.passengers} {searchParams.passengers === 1 ? 'Passenger' : 'Passengers'}
-            </p>
-          </div>
+  const clearAllFilters = () => {
+    setFilters({
+      airlines: [],
+      priceRange: { min: 0, max: 15000 },
+      departureTime: { min: 0, max: 24 }
+    });
+    setSortCriteria('price');
+    setSortDirection('asc');
+  };
 
-          <div className="flex space-x-3">
-            <div className="relative">
-              <select
-                className="appearance-none bg-white border border-gray-300 rounded-md py-2 px-4 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={sortCriteria}
-                onChange={(e) => setSortCriteria(e.target.value)}
-              >
-                <option value="price">Price</option>
-                <option value="duration">Duration</option>
-                <option value="departureTime">Departure Time</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                </svg>
-              </div>
+  // Render loading UI if no search params yet
+  if (!searchParams) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-gray-500">Enter your search criteria to find flights.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+      <div className="mb-4 pb-4 border-b border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-800">Flight Results</h2>
+        <div className="flex flex-wrap items-center text-sm text-gray-600 mt-2">
+          <div className="mr-4 mb-2">
+            <span className="font-medium">From:</span> {formatAirportForDisplay(searchParams.from)}
+          </div>
+          <div className="mr-4 mb-2">
+            <span className="font-medium">To:</span> {formatAirportForDisplay(searchParams.to)}
+          </div>
+          {searchParams.date ? (
+            <div className="mr-4 mb-2">
+              <span className="font-medium">Date:</span> {new Date(searchParams.date).toLocaleDateString()}
             </div>
-            
-            <button
-              onClick={toggleSortDirection}
-              className="p-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              {sortDirection === 'asc' ? <FaSortAmountUp /> : <FaSortAmountDown />}
-            </button>
-            
-            <button
-              onClick={toggleFilterMenu}
-              className={`p-2 border rounded-md text-white ${isFilterMenuOpen ? 'bg-emerald-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}
-            >
-              <FaFilter />
-            </button>
+          ) : (
+            <div className="mr-4 mb-2">
+              <span className="font-medium">Date:</span> <span className="text-emerald-600">All dates</span>
+            </div>
+          )}
+          <div className="mb-2">
+            <span className="font-medium">Passengers:</span> {searchParams.passengers}
           </div>
         </div>
-
-        {/* Filter Panel */}
-        <AnimatePresence>
-          {isFilterMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-4 border-t pt-4"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <h3 className="font-medium text-gray-800 mb-2">Airlines</h3>
-                  <div className="space-y-2">
-                    {airlines.map((airline) => (
-                      <label key={airline} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4"
-                          checked={filters.airlines.includes(airline)}
-                          onChange={() => handleAirlineFilterChange(airline)}
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{airline}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium text-gray-800 mb-2">Price Range</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">₹{filters.priceRange.min}</span>
-                      <span className="text-sm text-gray-500">₹{filters.priceRange.max}</span>
-                    </div>
-                    <div className="flex space-x-4">
-                      <input
-                        type="range"
-                        min="0"
-                        max="5000"
-                        step="100"
-                        value={filters.priceRange.min}
-                        onChange={(e) => handlePriceRangeChange(e.target.value, 'min')}
-                        className="w-full accent-emerald-500"
-                      />
-                      <input
-                        type="range"
-                        min="0"
-                        max="5000"
-                        step="100"
-                        value={filters.priceRange.max}
-                        onChange={(e) => handlePriceRangeChange(e.target.value, 'max')}
-                        className="w-full accent-emerald-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium text-gray-800 mb-2">Departure Time</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">
-                        {filters.departureTime.min}:00
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {filters.departureTime.max}:00
-                      </span>
-                    </div>
-                    <div className="flex space-x-4">
-                      <input
-                        type="range"
-                        min="0"
-                        max="24"
-                        value={filters.departureTime.min}
-                        onChange={(e) => handleDepartureTimeChange(e.target.value, 'min')}
-                        className="w-full accent-emerald-500"
-                      />
-                      <input
-                        type="range"
-                        min="0"
-                        max="24"
-                        value={filters.departureTime.max}
-                        onChange={(e) => handleDepartureTimeChange(e.target.value, 'max')}
-                        className="w-full accent-emerald-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
-      {filteredFlights.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-gray-500">No flights found matching your criteria.</p>
-          <button
-            onClick={() => setFilters({
-              airlines: [],
-              priceRange: { min: 0, max: 5000 },
-              departureTime: { min: 0, max: 24 }
-            })}
-            className="mt-4 text-emerald-500 hover:text-emerald-600"
-          >
-            Clear all filters
-          </button>
+      {loading ? (
+        <div className="py-20 flex justify-center">
+          <div className="w-10 h-10 border-4 border-emerald-500 border-opacity-20 rounded-full border-t-emerald-600 animate-spin"></div>
+        </div>
+      ) : error ? (
+        <div className="py-10 text-center">
+          <div className="text-red-500 mb-4">{error}</div>
+          <div className="text-sm text-gray-600">Please try modifying your search criteria</div>
+        </div>
+      ) : flights.length === 0 ? (
+        <div className="py-10 text-center">
+          <div className="text-lg text-gray-700 mb-2">No flights found</div>
+          <div className="text-sm text-gray-600">Please try different dates or routes</div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {filteredFlights.map((flight) => (
             <FlightCard
               key={flight.id}
               flight={flight}
-              onClick={() => onFlightSelect(flight)}
+              onClick={() => handleFlightSelect(flight)}
               selected={selectedFlightId === flight.id}
               showDetails={selectedFlightId === flight.id}
-              priceIncreased={flight.priceIncreased}
             />
           ))}
         </div>

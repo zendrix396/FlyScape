@@ -49,12 +49,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 pt-16">
       <div className="relative w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-6"
-          >
+          <div className="text-center mb-6">
             <RotatingText
               texts={['Discover', 'Experience', 'Explore', 'Journey']}
               mainClassName="px-4 sm:px-6 md:px-8 bg-emerald-200 text-emerald-800 overflow-hidden py-2 sm:py-3 md:py-4 justify-center rounded-lg mb-6 inline-block text-xl md:text-2xl font-bold"
@@ -76,7 +71,7 @@ export default function Home() {
             <p className="mt-4 text-xl text-emerald-100">
               Find and book the best flight deals with ease.
             </p>
-          </motion.div>
+          </div>
         </div>
         <div className="absolute -bottom-6 left-0 right-0 h-12 bg-white rounded-t-3xl"></div>
       </div>
@@ -119,17 +114,14 @@ export default function Home() {
                   icon: '🎯'
                 }
               ].map((feature, index) => (
-                <motion.div
+                <div
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow text-center border border-emerald-100"
                 >
                   <div className="text-5xl mb-4">{feature.icon}</div>
                   <h3 className="text-xl font-semibold text-emerald-800 mb-2">{feature.title}</h3>
                   <p className="text-gray-600">{feature.description}</p>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
@@ -151,27 +143,10 @@ export default function Home() {
                 Popular Destinations
               </ScrollReveal>
               
-              <motion.div 
-                className="overflow-hidden"
-                whileTap={{ cursor: "grabbing" }}
-              >
-                <motion.div
-                  className="flex gap-6 px-4"
-                  drag="x"
-                  dragConstraints={{ left: -1000, right: 0 }}
-                  initial={{ x: 0 }}
-                  animate={{ x: 0 }}
-                  transition={{
-                    x: {
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 30,
-                      repeat: Infinity,
-                      repeatType: "mirror",
-                      repeatDelay: 5,
-                      duration: 30
-                    }
-                  }}
+              <div className="overflow-hidden">
+                <div
+                  className="flex gap-6 px-4 overflow-x-auto pb-4"
+                  style={{ scrollBehavior: 'smooth' }}
                 >
                   {[
                     { 
@@ -223,11 +198,9 @@ export default function Home() {
                       description: 'The Big Apple that never sleeps'
                     }
                   ].map((destination, index) => (
-                    <motion.div
+                    <div
                       key={index}
                       className="min-w-[280px] max-w-[280px] bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all cursor-pointer border border-emerald-100"
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
                     >
                       <div 
                         className="h-48 bg-cover bg-center" 
@@ -240,10 +213,10 @@ export default function Home() {
                         <p className="text-emerald-600 text-sm">{destination.code}</p>
                         <p className="text-gray-600 text-sm mt-2">{destination.description}</p>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </div>
           </SpotlightCard>
         </div>

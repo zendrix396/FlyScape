@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPlane, FaCalendarAlt, FaSearch, FaExchangeAlt, FaUser, FaAngleDown, FaAngleUp } from 'react-icons/fa';
+import { FaPlane, FaCalendarAlt, FaSearch, FaExchangeAlt, FaUser, FaAngleDown, FaAngleUp, FaCalendarCheck } from 'react-icons/fa';
 import GradientText from './GradientText';
 import AnimatedList from './AnimatedList';
 import { motion, AnimatePresence } from 'framer-motion';
 import { searchAirports, formatAirportForDisplay } from '../services/airportService';
+import { extractAirportCode } from '../utils/airportUtil';
 
 export default function FlightSearch({ onSearch }) {
   const [from, setFrom] = useState('');
@@ -15,6 +16,7 @@ export default function FlightSearch({ onSearch }) {
   const [showPassengerDropdown, setShowPassengerDropdown] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchAllDates, setSearchAllDates] = useState(false);
 
   const fromRef = useRef(null);
   const toRef = useRef(null);
@@ -121,10 +123,20 @@ export default function FlightSearch({ onSearch }) {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    
+    // Use our consistent airport code extraction utility
+    const fromCode = extractAirportCode(from);
+    const toCode = extractAirportCode(to);
+    
+    // Only include date if not searching all dates
+    const searchDate = searchAllDates ? '' : date;
+    
+    console.log(`Search submitted with params - from: ${fromCode}, to: ${toCode}, date: ${searchDate || 'any date'}`);
+    
     onSearch({
-      from,
-      to,
-      date,
+      from: fromCode,
+      to: toCode,
+      date: searchDate,
       passengers,
     });
   };
@@ -182,6 +194,7 @@ export default function FlightSearch({ onSearch }) {
                 value={from}
                 onChange={handleFromChange}
                 onClick={() => showFromSuggestions && suggestions.length > 0 && setShowFromSuggestions(true)}
+                required
               />
             </div>
             {showFromSuggestions && suggestions.length > 0 && (
@@ -209,6 +222,7 @@ export default function FlightSearch({ onSearch }) {
                   value={to}
                   onChange={handleToChange}
                   onClick={() => showToSuggestions && suggestions.length > 0 && setShowToSuggestions(true)}
+                  required
                 />
               </div>
               {showToSuggestions && suggestions.length > 0 && (
@@ -233,17 +247,29 @@ export default function FlightSearch({ onSearch }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <div className="flex justify-between items-center">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <label className="flex items-center text-xs text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="rounded text-emerald-500 focus:ring-emerald-400 mr-1"
+                  checked={searchAllDates}
+                  onChange={(e) => setSearchAllDates(e.target.checked)}
+                />
+                Search all dates
+              </label>
+            </div>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FaCalendarAlt className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type="date"
-                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 pr-12 py-3 sm:text-sm border-gray-300 rounded-md"
+                className={`focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 pr-12 py-3 sm:text-sm border-gray-300 rounded-md ${searchAllDates ? 'opacity-50' : ''}`}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
+                disabled={searchAllDates}
               />
             </div>
           </div>
@@ -305,7 +331,7 @@ export default function FlightSearch({ onSearch }) {
           <button
             type="submit"
             className="w-full bg-emerald-600 text-white py-3 px-4 rounded-md flex items-center justify-center hover:bg-emerald-700"
-            disabled={!from || !to || !date}
+            disabled={!from || !to || (!date && !searchAllDates)}
           >
             <FaSearch className="mr-2" />
             Search Flights

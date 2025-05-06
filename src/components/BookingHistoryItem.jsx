@@ -1,7 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
-import { FaPlane, FaCalendarAlt, FaClock, FaTicketAlt, FaUser, FaMoneyBillAlt, FaCheck, FaTimes, FaArrowRight, FaRedo } from 'react-icons/fa';
+import { format, isValid } from 'date-fns';
+import { FaPlane, FaCalendarAlt, FaClock, FaTicketAlt, FaUser, FaMoneyBillAlt, FaCheck, FaTimes, FaArrowRight, FaRedo, FaPlaneDeparture, FaRegCalendarCheck, FaEye } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { formatAirportForDisplay } from '../utils/airportUtil';
 
 export default function BookingHistoryItem({ booking }) {
   const navigate = useNavigate();
@@ -12,6 +14,89 @@ export default function BookingHistoryItem({ booking }) {
     'Cancelled': 'text-red-600 bg-red-100',
     'Completed': 'text-blue-600 bg-blue-100',
   };
+
+  // Safe date formatting function to prevent "Invalid time value" errors
+  const safeFormatDate = (dateInput) => {
+    if (!dateInput) return "N/A";
+    
+    try {
+      // Handle Firestore timestamp objects
+      if (typeof dateInput === 'object' && dateInput !== null && dateInput.seconds) {
+        return new Date(dateInput.seconds * 1000).toLocaleDateString();
+      }
+      
+      // Handle Date objects
+      if (dateInput instanceof Date) {
+        return dateInput.toLocaleDateString();
+      }
+      
+      // Handle ISO strings or other string formats
+      if (typeof dateInput === 'string') {
+        const date = new Date(dateInput);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString();
+        }
+      }
+      
+      // If nothing works, return the original
+      return String(dateInput);
+    } catch (error) {
+      console.error("Error formatting date:", error, dateInput);
+      return "Invalid date";
+    }
+  };
+
+  // Safe time formatting function
+  const safeFormatTime = (timeInput) => {
+    if (!timeInput) return "N/A";
+    
+    try {
+      // Handle Firestore timestamp objects
+      if (typeof timeInput === 'object' && timeInput !== null && timeInput.seconds) {
+        return new Date(timeInput.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      
+      // Handle Date objects
+      if (timeInput instanceof Date) {
+        return timeInput.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      
+      // Handle ISO strings or other string formats
+      if (typeof timeInput === 'string') {
+        const date = new Date(timeInput);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+      }
+      
+      // If nothing works, return the original
+      return String(timeInput);
+    } catch (error) {
+      console.error("Error formatting time:", error, timeInput);
+      return "Invalid time";
+    }
+  };
+
+  // Format city codes safely
+  const formatCity = (cityCode) => {
+    if (!cityCode) return "Unknown";
+    try {
+      return formatAirportForDisplay(cityCode);
+    } catch (error) {
+      return cityCode;
+    }
+  };
+  
+  // Format the flight details with error handling
+  const fromCityDisplay = flight?.fromCity ? formatCity(flight.fromCity) : "Unknown";
+  const toCityDisplay = flight?.toCity ? formatCity(flight.toCity) : "Unknown";
+  const airlineDisplay = flight?.airline || "Unknown Airline";
+  const flightNumberDisplay = flight?.flightNumber || "Unknown";
+  
+  // Safely format dates and times
+  const bookingDateDisplay = safeFormatDate(bookingDate);
+  const departureTimeDisplay = flight?.departureTime ? safeFormatTime(flight.departureTime) : "N/A";
+  const departureDateDisplay = flight?.departureTime ? safeFormatDate(flight.departureTime) : "N/A";
 
   const handleViewTicket = () => {
     // Store the booking in session storage
@@ -28,7 +113,8 @@ export default function BookingHistoryItem({ booking }) {
     const searchParams = {
       from: flight.from,
       to: flight.to,
-      date: new Date(flight.departureTime).toISOString().split('T')[0],
+      date: flight.displayDepartureDate || 
+            safeFormatDate(flight.departureTime),
       passengers: 1
     };
     sessionStorage.setItem('searchParams', JSON.stringify(searchParams));
@@ -37,61 +123,70 @@ export default function BookingHistoryItem({ booking }) {
     navigate(`/booking/${flight.id}`);
   };
 
+  // Get price to display - use the most reliable price field available
+  const getPrice = () => {
+    if (flight) {
+      if (typeof booking.price === 'number' || typeof booking.price === 'string') {
+        return booking.price;
+      }
+      if (typeof flight.price === 'number' || typeof flight.price === 'string') {
+        return flight.price;
+      }
+    }
+    return 'N/A';
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4 border border-gray-100 hover:border-emerald-200 transition-colors">
-      <div className="p-4">
-        <div className="flex justify-between items-start mb-3">
-          <div>
-            <h3 className="font-semibold text-lg text-gray-900">{flight.from} <FaArrowRight className="inline text-emerald-500 mx-1" /> {flight.to}</h3>
-            <p className="text-gray-500 text-sm">{flight.airline} · {flight.flightNumber}</p>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-lg shadow-md p-4 mb-4"
+    >
+      <div className="flex flex-col md:flex-row justify-between">
+        <div className="flex items-start mb-3 md:mb-0">
+          <div className="bg-emerald-100 p-2 rounded-full mr-3">
+            <FaPlaneDeparture className="text-emerald-600" />
           </div>
-          <div className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'text-gray-600 bg-gray-100'}`}>
-            {status}
+          <div>
+            <div className="flex items-center">
+              <span className="text-lg font-semibold">{fromCityDisplay} → {toCityDisplay}</span>
+              <span className={`ml-3 text-xs font-medium px-2 py-1 rounded ${
+                status === 'Confirmed' ? 'bg-green-100 text-green-800' : 
+                status === 'Cancelled' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {status}
+              </span>
+            </div>
+            <div className="text-sm text-gray-600 mt-1">{airlineDisplay} • {flightNumberDisplay}</div>
+            <div className="flex items-center mt-1 text-xs text-gray-500">
+              <FaRegCalendarCheck className="mr-1" /> {departureDateDisplay} • {departureTimeDisplay}
+            </div>
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-          <div className="flex items-center">
-            <FaCalendarAlt className="text-gray-400 mr-2" />
-            <span className="text-sm">{format(new Date(flight.departureTime), 'dd MMM yyyy')}</span>
+        <div className="flex flex-col md:flex-row items-start md:items-center">
+          <div className="mr-0 md:mr-4 mb-2 md:mb-0">
+            <div className="text-xs text-gray-500">Booking ID</div>
+            <div className="text-sm font-medium">{bookingId}</div>
+            <div className="text-xs text-gray-500 mt-1">Booked on {bookingDateDisplay}</div>
           </div>
-          <div className="flex items-center">
-            <FaClock className="text-gray-400 mr-2" />
-            <span className="text-sm">
-              {format(new Date(flight.departureTime), 'hh:mm a')} - {format(new Date(flight.arrivalTime), 'hh:mm a')}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <FaTicketAlt className="text-gray-400 mr-2" />
-            <span className="text-sm">{bookingId}</span>
-          </div>
-          <div className="flex items-center">
-            <FaUser className="text-gray-400 mr-2" />
-            <span className="text-sm">{passengerName}</span>
-          </div>
-        </div>
-
-        <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-          <div className="flex items-center">
-            <FaMoneyBillAlt className="text-emerald-500 mr-2" />
-            <span className="font-medium text-gray-900">₹{flight.price}</span>
-          </div>
-          <div className="flex space-x-2">
-            <button
+          
+          <div className="flex">
+            <button 
               onClick={handleViewTicket}
-              className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-md text-sm hover:bg-emerald-100 transition-colors focus:outline-none"
+              className="flex items-center justify-center text-xs bg-emerald-50 text-emerald-600 px-3 py-2 rounded-md mr-2 hover:bg-emerald-100 transition-colors"
             >
-              View Ticket
+              <FaEye className="mr-1" /> View Ticket
             </button>
-            <button
+            <button 
               onClick={handleBookAgain}
-              className="px-3 py-1 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700 transition-colors focus:outline-none flex items-center"
+              className="flex items-center justify-center text-xs bg-blue-50 text-blue-600 px-3 py-2 rounded-md hover:bg-blue-100 transition-colors"
             >
               <FaRedo className="mr-1" /> Book Again
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 } 

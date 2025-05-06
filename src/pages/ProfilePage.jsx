@@ -5,10 +5,12 @@ import { motion } from 'framer-motion';
 import SpotlightCard from '../components/SpotlightCard';
 import GradientText from '../components/GradientText';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-hot-toast';
 
 export default function ProfilePage() {
-  const { currentUser, userProfile, logout } = useAuth();
+  const { currentUser, userProfile, logout, updateAdminStatus } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
   const handleLogout = async () => {
@@ -20,6 +22,30 @@ export default function ProfilePage() {
       console.error('Failed to log out', error);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  // Check if the user is an admin
+  const isAdmin = userProfile?.role === 'admin' || 
+                  userProfile?.isAdmin === true || 
+                  userProfile?.email === 'admin@example.com' ||
+                  userProfile?.email === 'adityasenpai396@gmail.com';
+
+  // Handle manually updating admin status (for debugging)
+  const handleUpdateAdminStatus = async () => {
+    if (!currentUser) return;
+    
+    try {
+      setIsLoading(true);
+      await updateAdminStatus(currentUser.uid, currentUser.email);
+      toast.success('Admin status updated successfully');
+      // Force reload the page to ensure all components update
+      window.location.reload();
+    } catch (error) {
+      toast.error('Failed to update admin status');
+      console.error('Error updating admin status:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -283,6 +309,23 @@ export default function ProfilePage() {
             </div>
           </div>
         </SpotlightCard>
+
+        {/* Add this where appropriate in your component */}
+        {isAdmin && (
+          <div className="mt-6 bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Admin Settings</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              You have administrator privileges. If you're having trouble accessing admin features, use the button below.
+            </p>
+            <button
+              onClick={handleUpdateAdminStatus}
+              className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Updating...' : 'Refresh Admin Status'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

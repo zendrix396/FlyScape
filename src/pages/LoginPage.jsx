@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaGoogle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
@@ -11,25 +11,45 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, updateAdminStatus, currentUser } = useAuth();
   const navigate = useNavigate();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/');
+    }
+  }, [currentUser, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
     
     try {
+      setError('');
       setLoading(true);
-      await login(email, password);
-      navigate('/'); // Redirect to home page after successful login
+      
+      const user = await login(email, password);
+      
+      // Update admin status after login
+      if (user) {
+        await updateAdminStatus(user.uid, user.email);
+      }
+      
+      navigate('/');
     } catch (error) {
-      console.error('Login error:', error);
-      setError(error.message || 'Failed to sign in');
+      let errorMessage = 'Failed to sign in';
+      
+      if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -37,18 +57,18 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      setLoading(true);
       setError('');
-      console.log('Initiating Google sign-in');
+      setLoading(true);
       
-      // Now using popup instead of redirect
       const user = await loginWithGoogle();
       
-      // If successful, redirect to home
-      console.log('Google sign-in successful, navigating to home');
+      // Update admin status after Google login
+      if (user) {
+        await updateAdminStatus(user.uid, user.email);
+      }
+      
       navigate('/');
     } catch (error) {
-      console.error('Google sign-in error:', error);
       setError(error.message || 'Failed to sign in with Google');
     } finally {
       setLoading(false);

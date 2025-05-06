@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { doc, addDoc, collection, getDocs, query, where, orderBy, limit, Timestamp, serverTimestamp } from 'firebase/firestore';
+import { doc, addDoc, collection, getDocs, query, where, orderBy, limit, Timestamp, serverTimestamp, getDoc, setDoc, increment } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
 import { useBooking } from '../contexts/BookingContext';
 import BookingForm from '../components/BookingForm';
 import Voucher from '../components/Voucher';
 import GradientText from '../components/GradientText';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaExclamationTriangle } from 'react-icons/fa';
+import { v4 as uuidv4 } from 'uuid';
+import LoadingSpinner from '../components/LoadingSpinner';
+import MessageModal from '../components/MessageModal';
+import { formatAirportForDisplay } from '../utils/airportUtil';
 
 export default function BookingPage() {
   const { flightId } = useParams();
@@ -19,6 +23,151 @@ export default function BookingPage() {
   const navigate = useNavigate();
   const { currentUser, userProfile } = useAuth();
   const { recordFlightSearch, shouldIncreasePriceBySearchHistory } = useBooking();
+  const [bookingSubmitted, setBookingSubmitted] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [passengerDetails, setPassengerDetails] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    gender: 'male',
+    age: '',
+    meal: 'standard'
+  });
+  const [bookingId, setBookingId] = useState('');
+  const [bookingDate, setBookingDate] = useState('');
+  const [showVoucher, setShowVoucher] = useState(false);
+
+  // Format dates properly to avoid "Invalid Date" display
+  const formatDate = (dateInput) => {
+    if (!dateInput) return 'N/A';
+    
+    try {
+      let date;
+      
+      // Check if it's a Firestore timestamp
+      if (typeof dateInput === 'object' && dateInput !== null) {
+        if (dateInput.seconds) {
+          // Firestore timestamp
+          date = new Date(dateInput.seconds * 1000);
+        } else if (dateInput instanceof Date) {
+          // Regular Date object
+          date = dateInput;
+        } else if (dateInput.displayDepartureDate || dateInput.displayArrivalDate) {
+          // Already formatted object, return the display value
+          return dateInput.displayDepartureDate || dateInput.displayArrivalDate;
+        } else {
+          // Try to use it as a Date constructor
+          date = new Date(dateInput);
+        }
+      } else if (typeof dateInput === 'string') {
+        // String date
+        date = new Date(dateInput);
+      } else if (typeof dateInput === 'number') {
+        // Timestamp in milliseconds
+        date = new Date(dateInput);
+      }
+      
+      // Check if date is valid
+      if (date instanceof Date && !isNaN(date)) {
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      }
+      
+      // If we get here, the date is invalid
+      return 'N/A';
+    } catch (error) {
+      console.error("Error formatting date:", error, dateInput);
+      return 'N/A';
+    }
+  };
+  
+  // Format time properly
+  const formatTime = (timeInput) => {
+    if (!timeInput) return 'N/A';
+    
+    try {
+      let time;
+      
+      // Check if we already have formatted time from the server
+      if (typeof timeInput === 'object' && timeInput !== null) {
+        if (timeInput.displayDepartureTime || timeInput.displayArrivalTime) {
+          return timeInput.displayDepartureTime || timeInput.displayArrivalTime;
+        }
+        
+        if (timeInput.seconds) {
+          // Firestore timestamp
+          time = new Date(timeInput.seconds * 1000);
+        } else if (timeInput instanceof Date) {
+          // Regular Date object
+          time = timeInput;
+        } else {
+          // Try to create date from object
+          time = new Date(timeInput);
+        }
+      } else if (typeof timeInput === 'string') {
+        // Check if it's already a formatted time (like "10:30 AM")
+        if (/^\d{1,2}:\d{2}(?: [AP]M)?$/.test(timeInput)) {
+          return timeInput;
+        }
+        // String date
+        time = new Date(timeInput);
+      } else if (typeof timeInput === 'number') {
+        // Timestamp in milliseconds
+        time = new Date(timeInput);
+      }
+      
+      // Check if date is valid
+      if (time instanceof Date && !isNaN(time)) {
+        return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      
+      return 'N/A';
+    } catch (error) {
+      console.error("Error formatting time:", error, timeInput);
+      return 'N/A';
+    }
+  };
+
+  // Process flight data to ensure valid date formats
+  const processFlightData = (flightData) => {
+    if (!flightData) return null;
+    
+    const processed = {...flightData};
+    
+    // Add formatted dates for display
+    if (processed.departureTime) {
+      processed.displayDepartureDate = formatDate(processed.departureTime);
+      processed.displayDepartureTime = formatTime(processed.departureTime);
+    }
+    
+    if (processed.arrivalTime) {
+      processed.displayArrivalDate = formatDate(processed.arrivalTime);
+      processed.displayArrivalTime = formatTime(processed.arrivalTime);
+    }
+    
+    // Format city names
+    if (processed.from && !processed.fromFormatted) {
+      try {
+        processed.fromFormatted = formatAirportForDisplay(processed.from);
+      } catch (e) {
+        processed.fromFormatted = processed.from;
+      }
+    }
+    
+    if (processed.to && !processed.toFormatted) {
+      try {
+        processed.toFormatted = formatAirportForDisplay(processed.to);
+      } catch (e) {
+        processed.toFormatted = processed.to;
+      }
+    }
+    
+    return processed;
+  };
 
   useEffect(() => {
     // Load the selected flight from session storage
@@ -38,8 +187,11 @@ export default function BookingPage() {
           return;
         }
 
+        // Process flight data to ensure valid dates
+        const processedFlight = processFlightData(selectedFlight);
+        
         // Check booking frequency for this flight to adjust price
-        await checkBookingFrequency(selectedFlight);
+        await checkBookingFrequency(processedFlight);
       } catch (error) {
         console.error('Error loading flight data:', error);
         setError('Error loading flight data. Please try again.');
@@ -98,6 +250,17 @@ export default function BookingPage() {
     }
   };
 
+  // Prefill user details if logged in
+  useEffect(() => {
+    if (currentUser) {
+      setPassengerDetails(prev => ({
+        ...prev,
+        name: currentUser.displayName || '',
+        email: currentUser.email || ''
+      }));
+    }
+  }, [currentUser]);
+
   // Check if user is authenticated
   if (!currentUser) {
     return (
@@ -122,6 +285,10 @@ export default function BookingPage() {
       const bookingId = generateBookingId();
       const createdBookings = [];
       
+      // Calculate total price (price per passenger * number of passengers)
+      const pricePerPassenger = flight?.price || 0;
+      const totalBookingPrice = pricePerPassenger * passengersCount;
+      
       // Create a booking for each passenger
       for (let i = 0; i < passengers.length; i++) {
         const passenger = passengers[i];
@@ -139,7 +306,10 @@ export default function BookingPage() {
           paymentMethod: formData.paymentMethod,
           bookingDate: new Date().toISOString(),
           passengerNumber: i + 1,
-          totalPassengers: passengersCount
+          totalPassengers: passengersCount,
+          price: pricePerPassenger, // Add individual passenger price
+          totalPrice: totalBookingPrice, // Add total booking price
+          currency: 'INR' // Specify currency
         };
         
         const docRef = await addDoc(collection(db, 'bookings'), bookingData);
@@ -153,6 +323,7 @@ export default function BookingPage() {
         createdBookings.push(updatedBooking);
       }
       
+      console.log(`Created ${createdBookings.length} bookings with total price: ${createdBookings[0].totalPrice}`);
       setBookings(createdBookings);
       setCurrentTicketIndex(0);
       
@@ -185,16 +356,7 @@ export default function BookingPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-gray-50">
-        <div className="animate-pulse flex space-x-4">
-          <div className="rounded-full bg-emerald-200 h-12 w-12"></div>
-          <div className="flex-1 space-y-4 py-1">
-            <div className="h-4 bg-emerald-200 rounded w-3/4"></div>
-            <div className="space-y-2">
-              <div className="h-4 bg-emerald-200 rounded"></div>
-              <div className="h-4 bg-emerald-200 rounded w-5/6"></div>
-            </div>
-          </div>
-        </div>
+        <LoadingSpinner size="medium" color="emerald" />
       </div>
     );
   }
@@ -281,7 +443,7 @@ export default function BookingPage() {
               Book Your Flight
             </GradientText>
             <h2 className="mt-2 text-gray-600">
-              {flight?.from} to {flight?.to} • {new Date(flight?.departureTime).toLocaleDateString()}
+              {flight?.fromFormatted || flight?.from} to {flight?.toFormatted || flight?.to} • {flight?.displayDepartureDate || 'N/A'}
             </h2>
           </div>
 
@@ -307,9 +469,9 @@ export default function BookingPage() {
               <div className="mb-4 md:mb-0">
                 <p className="text-sm text-gray-500">Departure</p>
                 <p className="text-xl font-semibold">
-                  {new Date(flight?.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {flight?.displayDepartureTime || formatTime(flight?.departureTime) || 'N/A'}
                 </p>
-                <p className="text-gray-600">{flight?.from}</p>
+                <p className="text-gray-600">{flight?.fromFormatted || flight?.from}</p>
               </div>
 
               <div className="mb-4 md:mb-0 md:mx-4 text-center">
@@ -323,9 +485,9 @@ export default function BookingPage() {
               <div className="text-right">
                 <p className="text-sm text-gray-500">Arrival</p>
                 <p className="text-xl font-semibold">
-                  {new Date(flight?.arrivalTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {flight?.displayArrivalTime || formatTime(flight?.arrivalTime) || 'N/A'}
                 </p>
-                <p className="text-gray-600">{flight?.to}</p>
+                <p className="text-gray-600">{flight?.toFormatted || flight?.to}</p>
               </div>
             </div>
 
@@ -350,6 +512,15 @@ export default function BookingPage() {
           </div>
         )}
       </div>
+      
+      {/* Message Modal for errors or notices */}
+      <MessageModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Notice"
+        message={modalMessage}
+        type="info"
+      />
     </div>
   );
 } 
