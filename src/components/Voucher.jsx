@@ -460,7 +460,7 @@ export default function Voucher({ booking }) {
         </p>
       </div>
 
-      <SpotlightCard className="bg-white rounded-xl shadow-lg border border-emerald-100 p-6" spotlightColor="rgba(16, 185, 129, 0.2)">
+      <SpotlightCard className="bg-white rounded-xl shadow-lg border border-emerald-100 p-6" spotlightColor="rgba(16, 185, 129, 0.1)" spotlightSize={250}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-1">

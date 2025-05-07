@@ -211,7 +211,8 @@ export default function BookingForm({ flight, onSubmit }) {
     <div className="w-full max-w-md mx-auto">
       <SpotlightCard 
         className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-100"
-        spotlightColor="rgba(16, 185, 129, 0.2)"
+        spotlightColor="rgba(16, 185, 129, 0.1)"
+        spotlightSize={250}
       >
         <div className="p-6">
           <div className="text-center mb-6">

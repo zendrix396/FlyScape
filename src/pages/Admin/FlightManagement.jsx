@@ -128,12 +128,12 @@ const FlightManagement = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Flight Management</h1>
-        <div className="flex gap-3">
+      <div className="flex flex-col mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">Flight Management</h1>
+        <div className="flex flex-wrap gap-3 mt-2 sm:mt-4">
           <Link 
             to="/admin/flights/add" 
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-colors"
           >
             <FaPlus /> Add Flight
           </Link>
@@ -151,7 +151,7 @@ const FlightManagement = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-emerald-100">
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Airline</label>
@@ -218,7 +218,7 @@ const FlightManagement = () => {
             <div className="flex items-end gap-3">
               <button
                 type="submit"
-                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-colors"
               >
                 Search
               </button>
@@ -241,17 +241,16 @@ const FlightManagement = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="flex justify-between items-center p-4 bg-gray-50 border-b">
-          <h2 className="text-xl font-semibold text-gray-800">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden border border-emerald-100">
+        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 border-b border-emerald-200">
+          <h2 className="text-xl font-semibold text-emerald-800">
             {pagination.totalFlights} {pagination.totalFlights === 1 ? 'Flight' : 'Flights'}
           </h2>
           <button
             onClick={fetchFlights}
-            className="flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-md hover:bg-emerald-200 transition-colors"
-            disabled={loading}
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white text-emerald-700 rounded-md border border-emerald-300 hover:bg-emerald-50 transition-colors"
           >
-            <FaSync className={loading ? 'animate-spin' : ''} /> Refresh
+            <FaSync className={loading ? "animate-spin" : ""} /> Refresh
           </button>
         </div>
         

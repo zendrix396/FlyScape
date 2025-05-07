@@ -181,17 +181,19 @@ const FlightGenerator = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Generate Random Flights</h1>
-        <Link 
-          to="/admin/flights" 
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-        >
-          <FaArrowLeft /> Back to Flights
-        </Link>
+      <div className="flex flex-col mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">Generate Random Flights</h1>
+        <div className="flex flex-wrap gap-3 mt-2 sm:mt-4">
+          <Link 
+            to="/admin/flights" 
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-md hover:from-gray-200 hover:to-gray-300 transition-colors border border-gray-300"
+          >
+            <FaArrowLeft /> Back to Flights
+          </Link>
+        </div>
       </div>
       
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-emerald-100">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -204,7 +206,7 @@ const FlightGenerator = () => {
                 onChange={handleCountChange}
                 min="1"
                 max="50"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
                 required
               />
             </div>
@@ -222,8 +224,8 @@ const FlightGenerator = () => {
             </div>
           </div>
           
-          <div className="border-t pt-4">
-            <h2 className="text-lg font-semibold mb-4">Date Range Options</h2>
+          <div className="border-t border-emerald-100 pt-4">
+            <h2 className="text-lg font-semibold mb-4 text-emerald-800">Date Range Options</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -234,7 +236,7 @@ const FlightGenerator = () => {
                   name="startDate"
                   value={dateRange.startDate}
                   onChange={handleDateRangeChange}
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
                 />
               </div>
               
@@ -247,14 +249,14 @@ const FlightGenerator = () => {
                   name="endDate"
                   value={dateRange.endDate}
                   onChange={handleDateRangeChange}
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
                 />
               </div>
             </div>
           </div>
           
-          <div className="border-t pt-4">
-            <h2 className="text-lg font-semibold mb-4">Price Range Options</h2>
+          <div className="border-t border-emerald-100 pt-4">
+            <h2 className="text-lg font-semibold mb-4 text-emerald-800">Price Range Options</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -268,7 +270,7 @@ const FlightGenerator = () => {
                   min="1000"
                   max="10000"
                   step="100"
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
                 />
               </div>
               
@@ -281,19 +283,19 @@ const FlightGenerator = () => {
                   name="maxPrice"
                   value={priceRange.maxPrice}
                   onChange={handlePriceRangeChange}
-                  min="5000"
+                  min="3000"
                   max="50000"
                   step="100"
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
                 />
               </div>
             </div>
           </div>
           
-          <div className="border-t pt-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Specific Route Options</h2>
-              <label className="inline-flex items-center">
+          <div className="border-t border-emerald-100 pt-4">
+            <div className="flex flex-wrap items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-emerald-800">Specific Route Options</h2>
+              <label className="inline-flex items-center mt-2 sm:mt-0">
                 <input
                   type="checkbox"
                   checked={routeOptions.enabled}
@@ -314,7 +316,7 @@ const FlightGenerator = () => {
                     name="fromCity"
                     value={routeOptions.fromCity}
                     onChange={handleRouteOptionsChange}
-                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
                     required={routeOptions.enabled}
                   >
                     <option value="">Select departure city</option>
@@ -334,7 +336,7 @@ const FlightGenerator = () => {
                     name="toCity"
                     value={routeOptions.toCity}
                     onChange={handleRouteOptionsChange}
-                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
                     required={routeOptions.enabled}
                   >
                     <option value="">Select arrival city</option>
@@ -349,11 +351,11 @@ const FlightGenerator = () => {
             )}
           </div>
           
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-colors"
             >
               {loading ? (
                 <>
@@ -371,7 +373,7 @@ const FlightGenerator = () => {
               type="button"
               onClick={handleCreateTestFlight}
               disabled={loading}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-md hover:from-blue-600 hover:to-blue-700 transition-colors"
             >
               <FaBug /> Create Test Flight
             </button>
@@ -386,20 +388,23 @@ const FlightGenerator = () => {
       </div>
       
       {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6">
+        <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6 border border-red-200">
           {error}
         </div>
       )}
       
       {success && (
-        <div className="bg-green-100 text-green-700 p-4 rounded-md mb-6">
+        <div className="bg-green-100 text-green-700 p-4 rounded-md mb-6 border border-green-200">
           {success}
         </div>
       )}
       
+      {/* If flights were generated, show them */}
       {generatedFlights.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <h2 className="text-xl font-bold p-4 bg-gray-50 border-b">Generated Flights</h2>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-emerald-100 mb-6">
+          <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 border-b border-emerald-200">
+            <h2 className="text-xl font-semibold text-emerald-800">Generated Flights</h2>
+          </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -414,16 +419,13 @@ const FlightGenerator = () => {
                     Departure
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Duration
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Price
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {generatedFlights.map((flight) => (
-                  <tr key={flight.id} className="hover:bg-gray-50">
+                {generatedFlights.map((flight, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -436,15 +438,13 @@ const FlightGenerator = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {formatAirportForDisplay(flight.fromCity)} → {formatAirportForDisplay(flight.toCity)}
+                      <div className="text-sm text-gray-900">{flight.fromCity} → {flight.toCity}</div>
+                      <div className="text-xs text-gray-500">
+                        {flight.availableSeats} seats available
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{formatDate(flight.departureTime)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{flight.duration}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{formatPrice(flight.price)}</div>
@@ -453,14 +453,6 @@ const FlightGenerator = () => {
                 ))}
               </tbody>
             </table>
-          </div>
-          <div className="p-4 bg-gray-50 border-t">
-            <Link
-              to="/admin/flights"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-            >
-              <FaArrowLeft /> View All Flights
-            </Link>
           </div>
         </div>
       )}

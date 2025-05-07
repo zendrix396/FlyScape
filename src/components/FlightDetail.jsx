@@ -62,7 +62,8 @@ export default function FlightDetail({ flight }) {
       
       <SpotlightCard
         className="bg-white rounded-xl overflow-hidden shadow-lg border border-emerald-50 mb-8"
-        spotlightColor="rgba(16, 185, 129, 0.15)"
+        spotlightColor="rgba(16, 185, 129, 0.1)"
+        spotlightSize={250}
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -144,6 +145,7 @@ export default function FlightDetail({ flight }) {
         <SpotlightCard 
           className="bg-white rounded-xl overflow-hidden shadow-md border border-emerald-50"
           spotlightColor="rgba(16, 185, 129, 0.1)"
+          spotlightSize={250}
         >
           <div className="p-6">
             <h3 className="text-lg font-semibold mb-4">Fare Details</h3>
@@ -167,6 +169,7 @@ export default function FlightDetail({ flight }) {
         <SpotlightCard 
           className="bg-white rounded-xl overflow-hidden shadow-md border border-emerald-50"
           spotlightColor="rgba(16, 185, 129, 0.1)"
+          spotlightSize={250}
         >
           <div className="p-6">
             <h3 className="text-lg font-semibold mb-4">Cancellation Policy</h3>

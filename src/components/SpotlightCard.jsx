@@ -4,6 +4,7 @@ const SpotlightCard = ({
   children,
   className = "",
   spotlightColor = "rgba(255, 255, 255, 0.25)",
+  spotlightSize = 400,
   printMode = false
 }) => {
   const divRef = useRef(null);
@@ -60,7 +61,7 @@ const SpotlightCard = ({
           className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 ease-in-out pdf-hide"
           style={{
             opacity,
-            background: `radial-gradient(circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`,
+            background: `radial-gradient(circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent ${spotlightSize}px)`,
           }}
         />
       )}

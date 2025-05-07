@@ -97,7 +97,8 @@ export default function ProfilePage() {
         {/* Profile Header */}
         <SpotlightCard
           className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-50 mb-6"
-          spotlightColor="rgba(16, 185, 129, 0.15)"
+          spotlightColor="rgba(16, 185, 129, 0.1)"
+          spotlightSize={250}
         >
           <div className="p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6">
             <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -162,36 +163,37 @@ export default function ProfilePage() {
           {/* Upcoming Flights */}
           <SpotlightCard
             className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-50 md:col-span-2"
-            spotlightColor="rgba(16, 185, 129, 0.15)"
+            spotlightColor="rgba(16, 185, 129, 0.1)"
+            spotlightSize={250}
           >
-            <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-800 flex items-center mb-4">
+            <div className="p-3 sm:p-6">
+              <h2 className="text-lg font-semibold text-gray-800 flex items-center mb-3 sm:mb-4">
                 <FaPlane className="mr-2 text-emerald-500" />
                 Your Travel Status
               </h2>
               
-              <div className="space-y-6">
-                <div className="bg-gray-50 rounded-lg p-4">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium text-gray-700">Upcoming Flights</h3>
-                      <p className="text-sm text-gray-500">Check your next adventures</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Check your next adventures</p>
                     </div>
                     <Link
                       to="/bookings"
-                      className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                      className="text-xs sm:text-sm font-medium text-emerald-600 hover:text-emerald-700"
                     >
                       View all
                     </Link>
                   </div>
                   
-                  <div className="mt-4 text-center py-8">
-                    <p className="text-gray-500">
+                  <div className="mt-3 sm:mt-4 text-center py-4 sm:py-6">
+                    <p className="text-gray-500 text-sm">
                       You don't have any upcoming flights.
                     </p>
                     <Link
                       to="/flights"
-                      className="mt-4 inline-block px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm"
+                      className="mt-3 sm:mt-4 inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-xs sm:text-sm"
                     >
                       Book a Flight
                     </Link>
@@ -229,7 +231,8 @@ export default function ProfilePage() {
           {/* Settings & Preferences */}
           <SpotlightCard
             className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-50"
-            spotlightColor="rgba(16, 185, 129, 0.15)"
+            spotlightColor="rgba(16, 185, 129, 0.1)"
+            spotlightSize={250}
           >
             <div className="p-6">
               <h2 className="text-lg font-semibold text-gray-800 flex items-center mb-4">
@@ -295,7 +298,8 @@ export default function ProfilePage() {
         {/* Footer Card */}
         <SpotlightCard
           className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-50 mt-6"
-          spotlightColor="rgba(16, 185, 129, 0.15)"
+          spotlightColor="rgba(16, 185, 129, 0.1)"
+          spotlightSize={250}
         >
           <div className="p-6">
             <div className="text-center">
