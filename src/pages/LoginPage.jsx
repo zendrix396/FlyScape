@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaGoogle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import SpotlightCard from '../components/SpotlightCard';
-import GradientText from '../components/GradientText';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, loginWithGoogle, updateAdminStatus, currentUser } = useAuth();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   // Check if user is already logged in
@@ -76,7 +77,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-emerald-50/50 to-white">
+    <div className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 ${
+      isDark 
+        ? 'bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900' 
+        : 'bg-gradient-to-b from-emerald-50/50 to-white'
+    }`}>
       <div className="max-w-md w-full space-y-8">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -85,12 +90,18 @@ export default function LoginPage() {
           className="text-center"
         >
           <h1 className="text-3xl font-bold mb-2">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500">
+            <span className={`bg-clip-text text-transparent ${
+              isDark
+                ? 'bg-gradient-to-r from-emerald-400 to-teal-300'
+                : 'bg-gradient-to-r from-emerald-600 to-teal-500'
+            }`}>
               Welcome back
             </span>
           </h1>
           <div className="h-1 w-16 bg-gradient-to-r from-emerald-500 to-teal-400 mx-auto rounded-full mb-3"></div>
-          <h2 className="text-gray-600">Sign in to your FlyScape account</h2>
+          <h2 className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+            Sign in to your FlyScape account
+          </h2>
         </motion.div>
         
         <motion.div
@@ -100,11 +111,19 @@ export default function LoginPage() {
           className="relative"
         >
           {/* Background gradient glow */}
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/30 to-teal-500/30 rounded-xl blur-md"></div>
+          <div className={`absolute -inset-0.5 ${
+            isDark
+              ? 'bg-gradient-to-r from-emerald-500/20 to-emerald-400/20'
+              : 'bg-gradient-to-r from-emerald-500/30 to-teal-500/30'
+          } rounded-xl blur-md`}></div>
           
           <SpotlightCard 
-            className="relative bg-white/90 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden p-8 border border-emerald-100"
-            spotlightColor="rgba(16, 185, 129, 0.3)"
+            className={`relative ${
+              isDark
+                ? 'bg-gray-800/90 backdrop-blur-sm border-gray-700'
+                : 'bg-white/90 backdrop-blur-sm border-emerald-100'
+            } rounded-xl shadow-xl overflow-hidden p-8`}
+            spotlightColor={isDark ? "rgba(16, 185, 129, 0.2)" : "rgba(16, 185, 129, 0.3)"}
             spotlightSize={250}
           >
             <form className="space-y-6" onSubmit={handleSubmit}>
@@ -112,9 +131,13 @@ export default function LoginPage() {
                 <motion.div 
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md"
+                  className={`${
+                    isDark
+                      ? 'bg-red-900/30 border-red-700'
+                      : 'bg-red-50 border-red-500'
+                  } border-l-4 p-4 rounded-md`}
                 >
-                  <p className="text-sm text-red-600 flex items-center">
+                  <p className={`text-sm ${isDark ? 'text-red-300' : 'text-red-600'} flex items-center`}>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
@@ -124,7 +147,7 @@ export default function LoginPage() {
               )}
               
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Email address
                 </label>
                 <div className="relative rounded-md shadow-sm">
@@ -139,14 +162,18 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    className={`appearance-none block w-full pl-10 pr-3 py-3 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-emerald-500 focus:border-emerald-500'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-emerald-500 focus:border-emerald-500'
+                    } rounded-lg shadow-sm focus:outline-none focus:ring-2`}
                     placeholder="Your email address"
                   />
                 </div>
               </div>
               
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Password
                 </label>
                 <div className="relative rounded-md shadow-sm">
@@ -161,7 +188,11 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    className={`appearance-none block w-full pl-10 pr-3 py-3 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-emerald-500 focus:border-emerald-500'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-emerald-500 focus:border-emerald-500'
+                    } rounded-lg shadow-sm focus:outline-none focus:ring-2`}
                     placeholder="Your password"
                   />
                 </div>
@@ -173,9 +204,13 @@ export default function LoginPage() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                    className={`h-4 w-4 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600'
+                        : 'bg-white border-gray-300'
+                    } text-emerald-600 focus:ring-emerald-500 rounded`}
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="remember-me" className={`ml-2 block text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     Remember me
                   </label>
                 </div>
@@ -183,7 +218,11 @@ export default function LoginPage() {
                 <div className="text-sm">
                   <Link 
                     to="/forgot-password" 
-                    className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+                    className={`font-medium ${
+                      isDark
+                        ? 'text-emerald-400 hover:text-emerald-300'
+                        : 'text-emerald-600 hover:text-emerald-500'
+                    } transition-colors`}
                   >
                     Forgot your password?
                   </Link>
@@ -196,7 +235,11 @@ export default function LoginPage() {
                   disabled={loading}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-white font-medium bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-white font-medium ${
+                    isDark
+                      ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600'
+                      : 'bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600'
+                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   {loading ? (
                     <div className="flex items-center">
@@ -213,10 +256,14 @@ export default function LoginPage() {
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
+                  <div className={`w-full border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  <span className={`px-2 ${
+                    isDark
+                      ? 'bg-gray-800 text-gray-400'
+                      : 'bg-white text-gray-500'
+                  }`}>Or continue with</span>
                 </div>
               </div>
               
@@ -227,7 +274,11 @@ export default function LoginPage() {
                   disabled={loading}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`w-full flex justify-center items-center px-4 py-3 border ${
+                    isDark
+                      ? 'border-gray-700 bg-gray-700 hover:bg-gray-600 text-white'
+                      : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
+                  } rounded-lg shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   <FaGoogle className="h-5 w-5 text-red-500 mr-2" />
                   Sign in with Google
@@ -243,9 +294,13 @@ export default function LoginPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-center mt-6"
         >
-          <p className="text-sm text-gray-600">
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             Don't have an account?{' '}
-            <Link to="/signup" className="font-medium text-emerald-600 hover:text-emerald-500 underline decoration-emerald-300 underline-offset-2 transition-colors">
+            <Link to="/signup" className={`font-medium ${
+              isDark
+                ? 'text-emerald-400 hover:text-emerald-300 decoration-emerald-600'
+                : 'text-emerald-600 hover:text-emerald-500 decoration-emerald-300'
+            } underline underline-offset-2 transition-colors`}>
               Sign up now
             </Link>
           </p>

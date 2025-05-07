@@ -128,28 +128,26 @@ export default function Navbar() {
                 )}
               </Link>
             ))}
-            
-            {/* Theme toggle */}
-            <ThemeToggle className={isDark ? 'text-gray-300' : 'text-gray-700'} />
           </div>
           
           {/* Authenticated User Options */}
           {currentUser && userProfile ? (
-            <div className="hidden md:flex items-center space-x-4">
-              {/* Wallet */}
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className={`px-3 py-1.5 ${
-                  isDark 
-                    ? 'bg-gradient-to-r from-emerald-900/30 to-teal-900/30 backdrop-blur-sm border-emerald-800/50 text-emerald-400' 
-                    : 'bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-sm border-emerald-200/30 text-emerald-700'
-                } rounded-full flex items-center border shadow-sm`}
-              >
-                <FaWallet className={`h-4 w-4 mr-2 ${isDark ? 'text-emerald-400' : 'text-emerald-500'}`} />
-                <span className="font-medium">₹{getWalletBalance()}</span>
-              </motion.div>
+            <div className="flex items-center space-x-2">
+              <div className="hidden md:flex mr-3">
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  className={`py-1 px-3 rounded-full ${
+                    isDark 
+                      ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800/50'
+                      : 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                  } border text-sm flex items-center`}
+                >
+                  <FaWallet className="mr-1 text-xs" /> ₹{getWalletBalance()}
+                </motion.div>
+              </div>
               
-              {/* Profile button */}
+              <ThemeToggle className={isDark ? 'text-gray-300' : 'text-gray-700'} />
+              
               <div className="relative">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -272,7 +270,6 @@ export default function Navbar() {
           
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-            <ThemeToggle className={isDark ? 'text-gray-300 mr-2' : 'text-gray-700 mr-2'} />
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsMenuOpen(!isMenuOpen)}

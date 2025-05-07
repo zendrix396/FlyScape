@@ -17,15 +17,9 @@ const ThemeToggle = ({ className = '' }) => {
     >
       <div className="flex items-center justify-center">
         {isDark ? (
-          <div className="flex items-center text-yellow-400">
-            <FaSun className="h-5 w-5" />
-            <span className="ml-2 text-sm font-medium text-gray-200">Light</span>
-          </div>
+          <FaSun className="h-5 w-5 text-yellow-400" />
         ) : (
-          <div className="flex items-center text-gray-700">
-            <FaMoon className="h-5 w-5" />
-            <span className="ml-2 text-sm font-medium">Dark</span>
-          </div>
+          <FaMoon className="h-5 w-5 text-gray-700" />
         )}
       </div>
     </motion.button>
