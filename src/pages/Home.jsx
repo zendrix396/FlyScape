@@ -64,9 +64,14 @@ export default function Home() {
             />
             
             <SplitText
-              text="Your Perfect Travel Experience"
-              className="text-4xl md:text-5xl font-bold text-center"
+              text="Your Perfect"
+              className="text-3xl md:text-5xl font-bold text-center"
               delay={50}
+            />
+            <SplitText
+              text="Travel Experience"
+              className="text-3xl md:text-5xl font-bold text-center mt-1"
+              delay={100}
             />
             <p className="mt-4 text-xl text-emerald-100">
               Find and book the best flight deals with ease.
@@ -76,62 +81,16 @@ export default function Home() {
         <div className="absolute -bottom-6 left-0 right-0 h-12 bg-white rounded-t-3xl"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10 mb-16">
-        <SpotlightCard className="p-0 border-emerald-200 bg-white" spotlightColor="rgba(16, 185, 129, 0.2)">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 -mt-20 relative z-10 mb-16">
+        <SpotlightCard className="p-0 border-emerald-200 bg-white px-3 sm:px-5 py-6 sm:py-8" spotlightColor="rgba(16, 185, 129, 0.3)" spotlightSize={150}>
           <FlightSearch onSearch={handleSearch} />
         </SpotlightCard>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <SpotlightCard className="bg-gradient-to-br from-emerald-50 to-white border-emerald-100" spotlightColor="rgba(16, 185, 129, 0.15)">
-          <div className="py-8">
-            <ScrollReveal
-              baseOpacity={0.3}
-              enableBlur={true}
-              baseRotation={2}
-              blurStrength={3}
-              containerClassName="mb-12 text-center"
-              textClassName="text-emerald-800"
-            >
-              Why Choose AeroVoyage
-            </ScrollReveal>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
-              {[
-                {
-                  title: 'Best Prices',
-                  description: 'Find the most competitive flight prices with no hidden fees.',
-                  icon: '💰'
-                },
-                {
-                  title: 'Easy Booking',
-                  description: 'Simple and user-friendly booking process from search to payment.',
-                  icon: '🚀'
-                },
-                {
-                  title: 'Customer Support',
-                  description: '24/7 support for any questions or issues with your booking.',
-                  icon: '🎯'
-                }
-              ].map((feature, index) => (
-                <div
-                  key={index}
-                  className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow text-center border border-emerald-100"
-                >
-                  <div className="text-5xl mb-4">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold text-emerald-800 mb-2">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </SpotlightCard>
-      </div>
-
-      <div className="bg-emerald-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SpotlightCard className="bg-gradient-to-br from-emerald-50 to-white border-emerald-100 mb-10" spotlightColor="rgba(16, 185, 129, 0.15)">
-            <div className="py-6">
+      <div className="bg-emerald-50 py-10 sm:py-16">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+          <SpotlightCard className="bg-gradient-to-br from-emerald-50 to-white border-emerald-100 mb-10" spotlightColor="rgba(16, 185, 129, 0.3)" spotlightSize={150}>
+            <div className="py-4 sm:py-6">
               <ScrollReveal
                 baseOpacity={0.3}
                 enableBlur={true}
@@ -143,11 +102,8 @@ export default function Home() {
                 Popular Destinations
               </ScrollReveal>
               
-              <div className="overflow-hidden">
-                <div
-                  className="flex gap-6 px-4 overflow-x-auto pb-4"
-                  style={{ scrollBehavior: 'smooth' }}
-                >
+              <div className="px-2 sm:px-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                   {[
                     { 
                       name: 'Delhi', 
@@ -164,13 +120,13 @@ export default function Home() {
                     { 
                       name: 'Bangalore', 
                       code: 'BLR', 
-                      image: 'https://images.unsplash.com/photo-1580009472549-1b5f422e3955?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      image: 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
                       description: 'India\'s Silicon Valley'
                     },
                     { 
                       name: 'Goa', 
                       code: 'GOI', 
-                      image: 'https://images.unsplash.com/photo-1587922546541-5f5a5c59767b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
                       description: 'Beach paradise on the Arabian Sea'
                     },
                     { 
@@ -200,7 +156,7 @@ export default function Home() {
                   ].map((destination, index) => (
                     <div
                       key={index}
-                      className="min-w-[280px] max-w-[280px] bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all cursor-pointer border border-emerald-100"
+                      className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all cursor-pointer border border-emerald-100"
                     >
                       <div 
                         className="h-48 bg-cover bg-center" 

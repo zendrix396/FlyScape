@@ -148,25 +148,27 @@ const FlightForm = () => {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
+      <div className="flex flex-col mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
           {isEditMode ? 'Edit Flight' : 'Add New Flight'}
         </h1>
-        <Link 
-          to="/admin/flights" 
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-        >
-          <FaArrowLeft /> Back to Flights
-        </Link>
+        <div className="flex flex-wrap gap-3 mt-2 sm:mt-4">
+          <Link 
+            to="/admin/flights" 
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-md hover:from-gray-200 hover:to-gray-300 transition-colors border border-gray-300"
+          >
+            <FaArrowLeft /> Back to Flights
+          </Link>
+        </div>
       </div>
       
       {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6">
+        <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6 border border-red-200">
           {error}
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 border border-emerald-100">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Airline */}
           <div>
@@ -177,7 +179,7 @@ const FlightForm = () => {
               name="airline"
               value={formData.airline}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
               required
             >
               <option value="">Select Airline</option>
@@ -198,7 +200,7 @@ const FlightForm = () => {
               value={formData.flightNumber}
               onChange={handleChange}
               placeholder="e.g. AI101"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
               required
             />
           </div>
@@ -214,7 +216,7 @@ const FlightForm = () => {
               value={formData.fromCity}
               onChange={handleChange}
               placeholder="e.g. Delhi"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
               required
             />
           </div>
@@ -230,7 +232,7 @@ const FlightForm = () => {
               value={formData.toCity}
               onChange={handleChange}
               placeholder="e.g. Mumbai"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
               required
             />
           </div>
@@ -249,7 +251,7 @@ const FlightForm = () => {
                 name="departureTime"
                 value={formData.departureTime}
                 onChange={handleChange}
-                className="w-full pl-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full pl-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
                 required
               />
             </div>
@@ -270,7 +272,7 @@ const FlightForm = () => {
                 value={formData.duration}
                 onChange={handleChange}
                 placeholder="e.g. 2h 30m"
-                className="w-full pl-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full pl-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
                 required
               />
             </div>
@@ -289,8 +291,8 @@ const FlightForm = () => {
               onChange={handleChange}
               min="1000"
               step="100"
-              placeholder="e.g. 5000"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="e.g. 3000"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
               required
             />
           </div>
@@ -307,22 +309,22 @@ const FlightForm = () => {
               onChange={handleChange}
               min="0"
               placeholder="e.g. 50"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
             />
           </div>
         </div>
         
-        <div className="mt-8 flex justify-end">
+        <div className="mt-8 flex flex-wrap justify-end gap-4">
           <button
             type="button"
             onClick={() => navigate('/admin/flights')}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors mr-4"
+            className="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-md hover:from-gray-200 hover:to-gray-300 transition-colors border border-gray-300"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+            className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-colors"
             disabled={submitting}
           >
             {submitting ? (

@@ -91,7 +91,8 @@ export default function LoginPage() {
         
         <SpotlightCard 
           className="bg-white rounded-xl shadow-md overflow-hidden p-8 border border-emerald-50"
-          spotlightColor="rgba(16, 185, 129, 0.15)"
+          spotlightColor="rgba(16, 185, 129, 0.1)"
+          spotlightSize={250}
         >
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (

@@ -167,29 +167,29 @@ export default function FlightSearch({ onSearch }) {
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
-      <div className="mb-6 text-center">
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 md:p-8">
+      <div className="mb-4 sm:mb-6 text-center">
         <GradientText
           colors={["#10b981", "#6ee7b7", "#10b981"]}
           animationSpeed={5}
-          className="text-3xl font-bold"
+          className="text-2xl sm:text-3xl font-bold"
         >
           Search Flights
         </GradientText>
-        <p className="text-gray-500 mt-2">Find the best deals on flights</p>
+        <p className="text-gray-500 mt-1 sm:mt-2 text-sm sm:text-base">Find the best deals on flights</p>
       </div>
 
       <form onSubmit={handleSearchSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div className="relative" ref={fromRef}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">From</label>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">From</label>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaPlane className="h-5 w-5 text-gray-400" />
+                <FaPlane className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
               </div>
               <input
                 type="text"
-                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 pr-12 py-3 sm:text-sm border-gray-300 rounded-md"
+                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-8 sm:pl-10 pr-8 sm:pr-12 py-2 sm:py-3 text-xs sm:text-sm border-gray-300 rounded-md"
                 placeholder="City or airport"
                 value={from}
                 onChange={handleFromChange}
@@ -210,14 +210,14 @@ export default function FlightSearch({ onSearch }) {
 
           <div className="relative flex" ref={toRef}>
             <div className="flex-grow">
-              <label className="block text-sm font-medium text-gray-700 mb-1">To</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">To</label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaPlane className="h-5 w-5 text-gray-400 transform rotate-90" />
+                  <FaPlane className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 transform rotate-90" />
                 </div>
                 <input
                   type="text"
-                  className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 pr-12 py-3 sm:text-sm border-gray-300 rounded-md"
+                  className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-8 sm:pl-10 pr-8 sm:pr-12 py-2 sm:py-3 text-xs sm:text-sm border-gray-300 rounded-md"
                   placeholder="City or airport"
                   value={to}
                   onChange={handleToChange}
@@ -239,87 +239,104 @@ export default function FlightSearch({ onSearch }) {
               <button
                 type="button"
                 onClick={handleSwapLocations}
-                className="p-3 bg-emerald-100 rounded-md text-emerald-600 hover:bg-emerald-200 transition-colors"
+                className="p-2 sm:p-3 bg-emerald-100 rounded-md text-emerald-600 hover:bg-emerald-200 transition-colors"
               >
-                <FaExchangeAlt className="h-5 w-5" />
+                <FaExchangeAlt className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
           </div>
 
           <div>
             <div className="flex justify-between items-center">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-              <label className="flex items-center text-xs text-gray-700 cursor-pointer">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700">Date</label>
+              <div className="flex items-center text-xs sm:text-sm text-emerald-600">
                 <input
                   type="checkbox"
-                  className="rounded text-emerald-500 focus:ring-emerald-400 mr-1"
+                  id="allDates"
                   checked={searchAllDates}
-                  onChange={(e) => setSearchAllDates(e.target.checked)}
+                  onChange={() => setSearchAllDates(!searchAllDates)}
+                  className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 focus:ring-emerald-500 rounded-sm"
                 />
-                Search all dates
-              </label>
+                <label htmlFor="allDates" className="flex items-center cursor-pointer">
+                  <FaCalendarCheck className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> All dates
+                </label>
+              </div>
             </div>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaCalendarAlt className="h-5 w-5 text-gray-400" />
+                <FaCalendarAlt className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
               </div>
               <input
                 type="date"
-                className={`focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 pr-12 py-3 sm:text-sm border-gray-300 rounded-md ${searchAllDates ? 'opacity-50' : ''}`}
+                className={`focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-8 sm:pl-10 py-2 sm:py-3 text-xs sm:text-sm border-gray-300 rounded-md ${
+                  searchAllDates ? 'bg-gray-100 text-gray-500' : ''
+                }`}
+                placeholder="Select date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setDate(e.target.value)}
                 disabled={searchAllDates}
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Passengers</label>
-            <div className="mt-1 relative rounded-md shadow-sm" ref={passengerRef}>
-              <div 
-                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full py-3 pl-3 pr-10 sm:text-sm border-gray-300 rounded-md cursor-pointer bg-white flex justify-between items-center"
+          <div className="relative" ref={passengerRef}>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Passengers</label>
+            <div className="mt-1">
+              <button
+                type="button"
                 onClick={() => setShowPassengerDropdown(!showPassengerDropdown)}
+                className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-8 sm:pl-10 pr-3 py-2 sm:py-3 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 text-xs sm:text-sm"
               >
-                <div className="flex items-center">
-                  <FaUser className="h-4 w-4 text-emerald-500 mr-2" />
-                  <span>{passengers} {passengers === 1 ? 'Passenger' : 'Passengers'}</span>
-                </div>
-                <div className="text-gray-400">
-                  {showPassengerDropdown ? <FaAngleUp /> : <FaAngleDown />}
-                </div>
-              </div>
-              
+                <span className="block truncate">{passengers} Passenger{passengers > 1 ? 's' : ''}</span>
+                <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  {showPassengerDropdown ? (
+                    <FaAngleUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                  ) : (
+                    <FaAngleDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                  )}
+                </span>
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <FaUser className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                </span>
+              </button>
+
               <AnimatePresence>
                 {showPassengerDropdown && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 border border-gray-200"
+                    className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1"
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                      <div
-                        key={num}
-                        className={`px-4 py-2 hover:bg-emerald-50 cursor-pointer transition-colors flex items-center justify-between ${
-                          passengers === num ? 'bg-emerald-50 text-emerald-700' : ''
-                        }`}
-                        onClick={() => {
-                          setPassengers(num);
-                          setShowPassengerDropdown(false);
-                        }}
-                      >
-                        <span>{num} {num === 1 ? 'Passenger' : 'Passengers'}</span>
-                        {passengers === num && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="h-2 w-2 rounded-full bg-emerald-500"
-                          />
-                        )}
+                    <div className="px-3 py-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs sm:text-sm text-gray-700">Select passengers</span>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => passengers > 1 && setPassengers(passengers - 1)}
+                            className={`p-1 rounded-md ${
+                              passengers > 1 ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'
+                            }`}
+                            disabled={passengers <= 1}
+                          >
+                            <span className="text-sm sm:text-base">-</span>
+                          </button>
+                          <span className="text-xs sm:text-sm font-medium text-gray-700">{passengers}</span>
+                          <button
+                            type="button"
+                            onClick={() => passengers < 9 && setPassengers(passengers + 1)}
+                            className={`p-1 rounded-md ${
+                              passengers < 9 ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'
+                            }`}
+                            disabled={passengers >= 9}
+                          >
+                            <span className="text-sm sm:text-base">+</span>
+                          </button>
+                        </div>
                       </div>
-                    ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -327,13 +344,12 @@ export default function FlightSearch({ onSearch }) {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="md:col-span-2">
           <button
             type="submit"
-            className="w-full bg-emerald-600 text-white py-3 px-4 rounded-md flex items-center justify-center hover:bg-emerald-700"
-            disabled={!from || !to || (!date && !searchAllDates)}
+            className="w-full mt-4 flex justify-center py-2 sm:py-3 px-4 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
           >
-            <FaSearch className="mr-2" />
+            <FaSearch className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
             Search Flights
           </button>
         </div>

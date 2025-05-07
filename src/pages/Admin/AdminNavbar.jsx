@@ -29,7 +29,7 @@ const AdminNavbar = () => {
   return (
     <>
       {/* Mobile Navbar */}
-      <div className="bg-emerald-800 text-white p-4 flex justify-between items-center lg:hidden">
+      <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 text-white p-4 flex justify-between items-center lg:hidden z-30 relative">
         <Link to="/admin" className="text-xl font-bold">
           AeroVoyage Admin
         </Link>
@@ -41,14 +41,37 @@ const AdminNavbar = () => {
         </button>
       </div>
 
-      {/* Sidebar - only position:fixed on large screens and not covering content */}
-      <aside className={`lg:block ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-emerald-800 text-white h-screen overflow-y-auto shadow-lg">
-          {/* Logo */}
-          <div className="p-5 border-b border-emerald-700">
+      {/* Mobile Overlay - placing it before the sidebar so it doesn't cover the sidebar */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-10 backdrop-blur-[1px] lg:hidden z-30"
+          onClick={toggleSidebar}
+          aria-hidden="true"
+        ></div>
+      )}
+      
+      {/* Sidebar - mobile version as overlay, desktop version as fixed sidebar */}
+      <aside 
+        className={`lg:block fixed inset-y-0 left-0 transform ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0 transition-transform duration-300 ease-in-out z-40 lg:z-0 w-3/4 sm:w-64 md:w-64`}
+      >
+        <div className="h-full bg-gradient-to-b from-emerald-600 to-emerald-800 text-white overflow-y-auto shadow-lg">
+          {/* Logo - only show on desktop, as mobile has its own header */}
+          <div className="p-5 border-b border-emerald-700 hidden lg:block">
             <Link to="/admin" className="text-xl font-bold">
               AeroVoyage Admin
             </Link>
+          </div>
+          
+          {/* Close button for mobile */}
+          <div className="p-4 flex justify-end lg:hidden">
+            <button 
+              onClick={toggleSidebar}
+              className="text-white focus:outline-none"
+            >
+              <FaTimes size={20} />
+            </button>
           </div>
           
           {/* Navigation */}
@@ -60,8 +83,8 @@ const AdminNavbar = () => {
                     to={item.path}
                     className={`flex items-center px-5 py-3 transition-colors duration-200 ${
                       isActive(item.path)
-                        ? 'bg-emerald-700 text-white'
-                        : 'text-emerald-100 hover:bg-emerald-700'
+                        ? 'bg-emerald-700 bg-opacity-70 text-white'
+                        : 'text-emerald-100 hover:bg-emerald-700 hover:bg-opacity-50'
                     }`}
                     onClick={() => setSidebarOpen(false)}
                   >
@@ -85,14 +108,6 @@ const AdminNavbar = () => {
           </div>
         </div>
       </aside>
-      
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 lg:hidden"
-          onClick={toggleSidebar}
-        ></div>
-      )}
     </>
   );
 };

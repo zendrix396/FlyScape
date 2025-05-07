@@ -204,30 +204,172 @@ export default function FlightList({ flights = [], loading = false, error = null
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
-      <div className="mb-4 pb-4 border-b border-gray-200">
-        <h2 className="text-2xl font-bold text-gray-800">Flight Results</h2>
-        <div className="flex flex-wrap items-center text-sm text-gray-600 mt-2">
-          <div className="mr-4 mb-2">
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6">
+      <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-gray-200">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Flight Results</h2>
+        <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
+          <div className="mr-3 sm:mr-4 mb-1 sm:mb-2">
             <span className="font-medium">From:</span> {formatAirportForDisplay(searchParams.from)}
           </div>
-          <div className="mr-4 mb-2">
+          <div className="mr-3 sm:mr-4 mb-1 sm:mb-2">
             <span className="font-medium">To:</span> {formatAirportForDisplay(searchParams.to)}
           </div>
           {searchParams.date ? (
-            <div className="mr-4 mb-2">
+            <div className="mr-3 sm:mr-4 mb-1 sm:mb-2">
               <span className="font-medium">Date:</span> {new Date(searchParams.date).toLocaleDateString()}
             </div>
           ) : (
-            <div className="mr-4 mb-2">
+            <div className="mr-3 sm:mr-4 mb-1 sm:mb-2">
               <span className="font-medium">Date:</span> <span className="text-emerald-600">All dates</span>
             </div>
           )}
-          <div className="mb-2">
+          <div className="mb-1 sm:mb-2">
             <span className="font-medium">Passengers:</span> {searchParams.passengers}
           </div>
         </div>
       </div>
+
+      <div className="mb-3 sm:mb-4 flex flex-wrap items-center justify-between">
+        <div className="flex items-center mb-2 sm:mb-0">
+          <button
+            onClick={toggleFilterMenu}
+            className="flex items-center mr-3 py-1.5 px-2.5 sm:px-3 bg-gray-100 hover:bg-gray-200 rounded-md text-xs sm:text-sm"
+          >
+            <FaFilter className="mr-1.5 text-gray-500" />
+            Filters
+          </button>
+          
+          <div className="flex items-center">
+            <select
+              value={sortCriteria}
+              onChange={(e) => setSortCriteria(e.target.value)}
+              className="mr-2 py-1.5 px-2.5 sm:px-3 bg-gray-100 rounded-l-md focus:outline-none text-xs sm:text-sm"
+            >
+              <option value="price">Price</option>
+              <option value="duration">Duration</option>
+              <option value="departureTime">Departure Time</option>
+            </select>
+            
+            <button
+              onClick={toggleSortDirection}
+              className="py-1.5 px-2 sm:px-3 bg-gray-100 hover:bg-gray-200 rounded-r-md text-xs sm:text-sm"
+            >
+              {sortDirection === 'asc' ? (
+                <FaSortAmountUp className="text-gray-500" />
+              ) : (
+                <FaSortAmountDown className="text-gray-500" />
+              )}
+            </button>
+          </div>
+        </div>
+        
+        {filteredFlights.length > 0 && (
+          <div className="text-xs sm:text-sm text-gray-500">
+            {filteredFlights.length} flight{filteredFlights.length !== 1 ? 's' : ''} found
+          </div>
+        )}
+      </div>
+      
+      {/* Filter Panel */}
+      <AnimatePresence>
+        {isFilterMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden mb-4 bg-gray-50 rounded-md p-3 sm:p-4"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Airlines</h3>
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {airlines.map(airline => (
+                    <label key={airline} className="flex items-center text-xs sm:text-sm">
+                      <input
+                        type="checkbox"
+                        checked={filters.airlines.includes(airline)}
+                        onChange={() => handleAirlineFilterChange(airline)}
+                        className="mr-2 rounded text-emerald-500 focus:ring-emerald-500"
+                      />
+                      {airline}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Price Range</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                    <span>₹{filters.priceRange.min}</span>
+                    <span>₹{filters.priceRange.max}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="15000"
+                    step="500"
+                    value={filters.priceRange.min}
+                    onChange={(e) => handlePriceRangeChange(e.target.value, 'min')}
+                    className="w-full slider-thumb accent-emerald-500"
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="15000"
+                    step="500"
+                    value={filters.priceRange.max}
+                    onChange={(e) => handlePriceRangeChange(e.target.value, 'max')}
+                    className="w-full slider-thumb accent-emerald-500"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Departure Time</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                    <span>{filters.departureTime.min}:00</span>
+                    <span>{filters.departureTime.max}:00</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="24"
+                    value={filters.departureTime.min}
+                    onChange={(e) => handleDepartureTimeChange(e.target.value, 'min')}
+                    className="w-full slider-thumb accent-emerald-500"
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="24"
+                    value={filters.departureTime.max}
+                    onChange={(e) => handleDepartureTimeChange(e.target.value, 'max')}
+                    className="w-full slider-thumb accent-emerald-500"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-3 sm:mt-4 flex justify-end">
+              <button
+                onClick={clearAllFilters}
+                className="px-3 py-1.5 text-xs sm:text-sm text-gray-600 hover:text-gray-800"
+              >
+                Clear All
+              </button>
+              <button
+                onClick={toggleFilterMenu}
+                className="ml-2 px-3 py-1.5 bg-emerald-500 text-white rounded-md text-xs sm:text-sm hover:bg-emerald-600"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {loading ? (
         <div className="py-20 flex justify-center">

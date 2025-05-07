@@ -43,25 +43,25 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-        <div className="flex gap-4">
+      <div className="flex flex-col mb-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">Admin Dashboard</h1>
+        <div className="flex flex-wrap gap-3 mt-2 sm:mt-4">
           <button 
             onClick={fetchAnalytics} 
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-600 rounded-md hover:bg-emerald-200 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-600 rounded-md border border-emerald-200 hover:from-emerald-100 hover:to-emerald-200 transition-colors"
           >
-            <FaSyncAlt /> Refresh
+            <FaSyncAlt className={loading ? "animate-spin" : ""} /> Refresh
           </button>
           <Link 
             to="/admin/flights/add" 
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-colors"
           >
             <FaPlusCircle /> Add Flight
           </Link>
         </div>
       </div>
 
-      {loading ? (
+      {loading && !analytics.userCount ? (
         <div className="text-center py-10">
           <div className="animate-spin inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full mb-4"></div>
           <p className="text-gray-600">Loading analytics data...</p>
@@ -74,7 +74,7 @@ const Dashboard = () => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {/* Users Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-emerald-500">
+            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-emerald-500 hover:shadow-lg transition-shadow">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-700">Total Users</h3>
                 <div className="p-3 bg-emerald-100 rounded-full">
@@ -88,7 +88,7 @@ const Dashboard = () => {
             </div>
 
             {/* Bookings Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-emerald-500">
+            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-emerald-500 hover:shadow-lg transition-shadow">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-700">Total Bookings</h3>
                 <div className="p-3 bg-emerald-100 rounded-full">
@@ -102,7 +102,7 @@ const Dashboard = () => {
             </div>
 
             {/* Revenue Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-emerald-500">
+            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-emerald-500 hover:shadow-lg transition-shadow">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-700">Total Revenue</h3>
                 <div className="p-3 bg-emerald-100 rounded-full">
@@ -116,7 +116,7 @@ const Dashboard = () => {
             </div>
 
             {/* Flights Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-emerald-500">
+            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-emerald-500 hover:shadow-lg transition-shadow">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-700">Active Flights</h3>
                 <div className="p-3 bg-emerald-100 rounded-full">
@@ -130,12 +130,12 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-emerald-100">
+            <h2 className="text-xl font-bold text-emerald-800 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link 
                 to="/admin/flights" 
-                className="block p-4 bg-emerald-50 rounded-md hover:bg-emerald-100 transition-colors"
+                className="block p-4 bg-gradient-to-r from-emerald-50 to-white rounded-md hover:from-emerald-100 hover:to-emerald-50 border border-emerald-100 transition-colors"
               >
                 <h3 className="font-medium text-gray-800 mb-2">Manage Flights</h3>
                 <p className="text-sm text-gray-600">View, edit, and delete flight schedules</p>
@@ -143,7 +143,7 @@ const Dashboard = () => {
               
               <Link 
                 to="/admin/flights/generate" 
-                className="block p-4 bg-emerald-50 rounded-md hover:bg-emerald-100 transition-colors"
+                className="block p-4 bg-gradient-to-r from-emerald-50 to-white rounded-md hover:from-emerald-100 hover:to-emerald-50 border border-emerald-100 transition-colors"
               >
                 <h3 className="font-medium text-gray-800 mb-2">Generate Flights</h3>
                 <p className="text-sm text-gray-600">Quickly generate multiple flight options</p>
@@ -151,7 +151,7 @@ const Dashboard = () => {
               
               <Link 
                 to="/admin/analytics" 
-                className="block p-4 bg-emerald-50 rounded-md hover:bg-emerald-100 transition-colors"
+                className="block p-4 bg-gradient-to-r from-emerald-50 to-white rounded-md hover:from-emerald-100 hover:to-emerald-50 border border-emerald-100 transition-colors"
               >
                 <h3 className="font-medium text-gray-800 mb-2">Detailed Analytics</h3>
                 <p className="text-sm text-gray-600">View detailed reports and statistics</p>

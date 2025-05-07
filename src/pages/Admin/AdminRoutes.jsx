@@ -33,7 +33,7 @@ export default function AdminRoutes() {
   // If still loading user data or not authenticated, show loading
   if (!currentUser || !userProfile) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-emerald-50 to-white">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
       </div>
     );
@@ -45,15 +45,15 @@ export default function AdminRoutes() {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-emerald-50">
       {/* AdminNavbar component */}
       <div className="relative z-10">
         <AdminNavbar />
       </div>
       
       {/* Main content container positioned to the right of sidebar */}
-      <div className="lg:pl-64 z-5 relative">
-        <main className="p-4 md:p-6 bg-gray-50 min-h-screen">
+      <div className="lg:pl-64 relative">
+        <main className="p-4 md:p-6 bg-gradient-to-br from-emerald-50 to-white min-h-screen">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />

@@ -12,6 +12,12 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../firebase/config';
+import Cookies from 'js-cookie';
+
+// Cookie configuration
+const COOKIE_EXPIRY = 7; // days
+const USER_COOKIE = 'aerovoyage_user';
+const PROFILE_COOKIE = 'aerovoyage_profile';
 
 const AuthContext = createContext();
 
@@ -24,6 +30,44 @@ export function AuthProvider({ children }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Save user data to cookies
+  const saveUserToCookies = (user, profile) => {
+    if (user) {
+      // Save only necessary user data (no sensitive info)
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      };
+      
+      // Set secure cookies with expiry
+      Cookies.set(USER_COOKIE, JSON.stringify(userData), { 
+        expires: COOKIE_EXPIRY, 
+        secure: window.location.protocol === 'https:',
+        sameSite: 'Strict'
+      });
+      
+      if (profile) {
+        // Don't include sensitive information in the cookie
+        const { walletBalance, isAdmin, displayName, email, photoURL } = profile;
+        Cookies.set(PROFILE_COOKIE, JSON.stringify({ 
+          walletBalance, isAdmin, displayName, email, photoURL 
+        }), { 
+          expires: COOKIE_EXPIRY, 
+          secure: window.location.protocol === 'https:',
+          sameSite: 'Strict'
+        });
+      }
+    }
+  };
+
+  // Clear cookies on logout
+  const clearCookies = () => {
+    Cookies.remove(USER_COOKIE);
+    Cookies.remove(PROFILE_COOKIE);
+  };
 
   // Create user profile in Firestore
   async function createUserProfile(uid, userData) {
@@ -41,11 +85,16 @@ export function AuthProvider({ children }) {
         walletBalance: 50000,
         createdAt: new Date().toISOString(),
         isAdmin: isAdmin, // Set admin flag based on email
+        lastLogin: new Date().toISOString() // Track login time
       };
       
       console.log("Setting up user profile with admin status:", isAdmin);
       
       await setDoc(userDocRef, newUserData);
+      
+      // Save to cookies
+      saveUserToCookies({ uid, ...userData }, newUserData);
+      
       return newUserData;
     } catch (error) {
       console.error('Error creating user profile:', error);
@@ -61,7 +110,12 @@ export function AuthProvider({ children }) {
       const userDoc = await getDoc(userDocRef);
       
       if (userDoc.exists()) {
-        return userDoc.data();
+        const profileData = userDoc.data();
+        
+        // Update last login time
+        await updateDoc(userDocRef, { lastLogin: new Date().toISOString() });
+        
+        return profileData;
       } else {
         console.log("No user profile found");
         return null;
@@ -83,11 +137,14 @@ export function AuthProvider({ children }) {
       await updateProfile(result.user, { displayName: name });
       
       // Create user profile in Firestore
-      await createUserProfile(result.user.uid, {
+      const profile = await createUserProfile(result.user.uid, {
         email,
         displayName: name,
         photoURL: result.user.photoURL || '',
       });
+      
+      // Save to cookies
+      saveUserToCookies(result.user, profile);
       
       return result.user;
     } catch (error) {
@@ -107,6 +164,9 @@ export function AuthProvider({ children }) {
       // Fetch user profile
       const profile = await getUserProfile(result.user.uid);
       setUserProfile(profile);
+      
+      // Save to cookies
+      saveUserToCookies(result.user, profile);
       
       return result.user;
     } catch (error) {
@@ -130,16 +190,19 @@ export function AuthProvider({ children }) {
       console.log("Google sign-in successful for:", user.email);
       
       // Check if user profile exists, if not create one
-      const profile = await getUserProfile(user.uid);
+      let profile = await getUserProfile(user.uid);
       
       if (!profile) {
         console.log("Creating new profile for Google user");
-        await createUserProfile(user.uid, {
+        profile = await createUserProfile(user.uid, {
           email: user.email,
           displayName: user.displayName || '',
           photoURL: user.photoURL || '',
         });
       }
+      
+      // Save to cookies
+      saveUserToCookies(user, profile);
       
       return user;
     } catch (error) {
@@ -151,6 +214,7 @@ export function AuthProvider({ children }) {
 
   // Logout
   function logout() {
+    clearCookies(); // Clear cookies on logout
     setUserProfile(null);
     return signOut(auth);
   }
@@ -195,10 +259,15 @@ export function AuthProvider({ children }) {
       console.log("New wallet balance:", newBalance);
       
       // Update local state
-      setUserProfile(prev => ({
-        ...prev,
+      const updatedProfile = {
+        ...userProfile,
         [walletField]: newBalance
-      }));
+      };
+      
+      setUserProfile(updatedProfile);
+      
+      // Update cookie with new balance
+      saveUserToCookies(currentUser, updatedProfile);
       
       return newBalance;
     } catch (error) {
@@ -226,10 +295,15 @@ export function AuthProvider({ children }) {
           
           // Update local state if this is the current user
           if (currentUser && currentUser.uid === uid) {
-            setUserProfile(prev => ({
-              ...prev,
+            const updatedProfile = {
+              ...userProfile,
               isAdmin
-            }));
+            };
+            
+            setUserProfile(updatedProfile);
+            
+            // Update cookie
+            saveUserToCookies(currentUser, updatedProfile);
           }
         }
       }
@@ -237,6 +311,34 @@ export function AuthProvider({ children }) {
       console.error('Error updating admin status:', error);
     }
   }
+
+  // Check if we can restore user from cookies
+  const restoreUserFromCookies = async () => {
+    try {
+      const userCookie = Cookies.get(USER_COOKIE);
+      const profileCookie = Cookies.get(PROFILE_COOKIE);
+      
+      if (userCookie && !currentUser) {
+        const userData = JSON.parse(userCookie);
+        console.log("Restoring user from cookie:", userData.email);
+        
+        // We don't set currentUser from cookie as that would bypass Firebase auth
+        // But we can use the data to improve UX until Firebase auth completes
+        
+        if (profileCookie) {
+          const profileData = JSON.parse(profileCookie);
+          console.log("Restoring profile from cookie");
+          
+          // Temporarily set the profile from cookie while we wait for Firebase
+          setUserProfile(profileData);
+        }
+      }
+    } catch (error) {
+      console.error("Error restoring from cookies:", error);
+      // If there's any error with the cookies, clear them
+      clearCookies();
+    }
+  };
 
   // Check for redirect results on initial load
   useEffect(() => {
@@ -251,11 +353,17 @@ export function AuthProvider({ children }) {
           
           if (!profile) {
             console.log("Creating profile for redirect user");
-            await createUserProfile(result.user.uid, {
+            const newProfile = await createUserProfile(result.user.uid, {
               email: result.user.email,
               displayName: result.user.displayName || '',
               photoURL: result.user.photoURL || '',
             });
+            
+            // Save to cookies
+            saveUserToCookies(result.user, newProfile);
+          } else {
+            // Save to cookies
+            saveUserToCookies(result.user, profile);
           }
         }
       } catch (error) {
@@ -264,6 +372,9 @@ export function AuthProvider({ children }) {
       }
     };
     
+    // Try to restore from cookies first
+    restoreUserFromCookies();
+    // Then check redirect result
     checkRedirectResult();
   }, []);
 
@@ -287,8 +398,14 @@ export function AuthProvider({ children }) {
               photoURL: user.photoURL || '',
             });
             setUserProfile(newProfile);
+            
+            // Save to cookies
+            saveUserToCookies(user, newProfile);
           } else {
             setUserProfile(profile);
+            
+            // Save to cookies
+            saveUserToCookies(user, profile);
             
             // Check and update admin status
             await updateAdminStatus(user.uid, user.email);
@@ -298,6 +415,8 @@ export function AuthProvider({ children }) {
         }
       } else {
         setUserProfile(null);
+        // Clear cookies if user is logged out
+        clearCookies();
       }
       
       setLoading(false);
