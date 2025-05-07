@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaFilter, FaSortAmountDown, FaSortAmountUp, FaBug } from 'react-icons/fa';
 import { formatAirportForDisplay } from '../utils/airportUtil';
 import AnimatedList from './AnimatedList';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function FlightList({ flights = [], loading = false, error = null, searchParams, onFlightSelect, onSelect }) {
+  const { isDark } = useTheme();
   const [selectedFlightId, setSelectedFlightId] = useState(null);
   const [filteredFlights, setFilteredFlights] = useState([]);
   const [sortCriteria, setSortCriteria] = useState('price');
@@ -197,74 +199,172 @@ export default function FlightList({ flights = [], loading = false, error = null
   // Render loading UI if no search params yet
   if (!searchParams) {
     return (
-      <div className="text-center py-10">
-        <p className="text-gray-500">Enter your search criteria to find flights.</p>
+      <div className={`text-center py-10 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+        <p>Please search for flights to see results.</p>
+      </div>
+    );
+  }
+
+  // When flights are loading
+  if (loading) {
+    return (
+      <div className="flex justify-center py-8">
+        <div className="w-12 h-12 border-4 border-emerald-500 border-opacity-20 rounded-full border-t-emerald-600 animate-spin"></div>
+      </div>
+    );
+  }
+
+  // When there is an error
+  if (error) {
+    return (
+      <div className={`text-center py-8 ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  // When there are no flights found
+  if (flights.length === 0) {
+    return (
+      <div className={`text-center py-10 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+        <p>No flights found for your search criteria.</p>
+        <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          Try adjusting your search parameters.
+        </p>
+      </div>
+    );
+  }
+
+  // When there are no filtered flights
+  if (filteredFlights.length === 0) {
+    return (
+      <div>
+        <div className={`flex items-center justify-between mb-4 pb-3 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex items-center">
+            <button
+              onClick={toggleFilterMenu}
+              className={`flex items-center mr-4 px-3 py-1.5 rounded-md ${
+                isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              <FaFilter className={`${isDark ? 'text-emerald-400' : 'text-emerald-600'} mr-1`} />
+              <span>Filters</span>
+            </button>
+            <select
+              value={sortCriteria}
+              onChange={(e) => setSortCriteria(e.target.value)}
+              className={`mr-2 rounded-md border ${
+                isDark 
+                  ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                  : 'bg-white border-gray-300 text-gray-700'
+              } py-1.5 px-2`}
+            >
+              <option value="price">Price</option>
+              <option value="duration">Duration</option>
+              <option value="departureTime">Departure Time</option>
+            </select>
+            <button
+              onClick={toggleSortDirection}
+              className={`p-1.5 rounded-md ${
+                isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              {sortDirection === 'asc' ? (
+                <FaSortAmountUp className={`${isDark ? 'text-gray-300' : 'text-gray-500'}`} />
+              ) : (
+                <FaSortAmountDown className={`${isDark ? 'text-gray-300' : 'text-gray-500'}`} />
+              )}
+            </button>
+          </div>
+        </div>
+        
+        {/* Filter Panel */}
+        <AnimatePresence>
+          {isFilterMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`overflow-hidden mb-4 ${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-md p-3 sm:p-4`}
+            >
+              {/* Filter content here */}
+              <button
+                onClick={clearAllFilters}
+                className={`mt-3 px-3 py-1 text-sm rounded-md ${
+                  isDark 
+                    ? 'bg-gray-600 hover:bg-gray-500 text-gray-200' 
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                }`}
+              >
+                Clear Filters
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <div className={`text-center py-8 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p>No flights match your current filters.</p>
+          <button
+            onClick={clearAllFilters}
+            className={`mt-3 px-4 py-2 ${
+              isDark 
+                ? 'bg-emerald-700 hover:bg-emerald-600' 
+                : 'bg-emerald-600 hover:bg-emerald-700'
+            } text-white rounded-md text-sm`}
+          >
+            Clear Filters
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6">
-      <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-gray-200">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Flight Results</h2>
-        <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
-          <div className="mr-3 sm:mr-4 mb-1 sm:mb-2">
-            <span className="font-medium">From:</span> {formatAirportForDisplay(searchParams.from)}
-          </div>
-          <div className="mr-3 sm:mr-4 mb-1 sm:mb-2">
-            <span className="font-medium">To:</span> {formatAirportForDisplay(searchParams.to)}
-          </div>
-          {searchParams.date ? (
-            <div className="mr-3 sm:mr-4 mb-1 sm:mb-2">
-              <span className="font-medium">Date:</span> {new Date(searchParams.date).toLocaleDateString()}
-            </div>
-          ) : (
-            <div className="mr-3 sm:mr-4 mb-1 sm:mb-2">
-              <span className="font-medium">Date:</span> <span className="text-emerald-600">All dates</span>
-            </div>
-          )}
-          <div className="mb-1 sm:mb-2">
-            <span className="font-medium">Passengers:</span> {searchParams.passengers}
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-3 sm:mb-4 flex flex-wrap items-center justify-between">
-        <div className="flex items-center mb-2 sm:mb-0">
+    <div>
+      <div className={`flex items-center justify-between mb-4 pb-3 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div className="flex flex-wrap items-center">
           <button
             onClick={toggleFilterMenu}
-            className="flex items-center mr-3 py-1.5 px-2.5 sm:px-3 bg-gray-100 hover:bg-gray-200 rounded-md text-xs sm:text-sm"
+            className={`flex items-center mr-3 mb-2 sm:mb-0 px-3 py-1.5 rounded-md ${
+              isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`}
           >
-            <FaFilter className="mr-1.5 text-gray-500" />
-            Filters
+            <FaFilter className={`${isDark ? 'text-emerald-400' : 'text-emerald-600'} mr-1`} />
+            <span>Filters{filters.airlines.length > 0 ? ` (${filters.airlines.length})` : ''}</span>
           </button>
           
           <div className="flex items-center">
             <select
               value={sortCriteria}
               onChange={(e) => setSortCriteria(e.target.value)}
-              className="mr-2 py-1.5 px-2.5 sm:px-3 bg-gray-100 rounded-l-md focus:outline-none text-xs sm:text-sm"
+              className={`mr-2 rounded-md border ${
+                isDark 
+                  ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                  : 'bg-white border-gray-300 text-gray-700'
+              } py-1.5 px-2 text-sm`}
             >
               <option value="price">Price</option>
               <option value="duration">Duration</option>
               <option value="departureTime">Departure Time</option>
             </select>
-            
             <button
               onClick={toggleSortDirection}
-              className="py-1.5 px-2 sm:px-3 bg-gray-100 hover:bg-gray-200 rounded-r-md text-xs sm:text-sm"
+              className={`p-1.5 rounded-md ${
+                isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+              }`}
             >
               {sortDirection === 'asc' ? (
-                <FaSortAmountUp className="text-gray-500" />
+                <FaSortAmountUp className={`${isDark ? 'text-gray-300' : 'text-gray-500'}`} />
               ) : (
-                <FaSortAmountDown className="text-gray-500" />
+                <FaSortAmountDown className={`${isDark ? 'text-gray-300' : 'text-gray-500'}`} />
               )}
             </button>
           </div>
         </div>
         
         {filteredFlights.length > 0 && (
-          <div className="text-xs sm:text-sm text-gray-500">
+          <div className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             {filteredFlights.length} flight{filteredFlights.length !== 1 ? 's' : ''} found
           </div>
         )}
@@ -278,19 +378,19 @@ export default function FlightList({ flights = [], loading = false, error = null
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="overflow-hidden mb-4 bg-gray-50 rounded-md p-3 sm:p-4"
+            className={`overflow-hidden mb-4 ${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-md p-3 sm:p-4`}
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Airlines</h3>
+                <h3 className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} mb-2`}>Airlines</h3>
                 <div className="space-y-1 max-h-40 overflow-y-auto">
                   {airlines.map(airline => (
-                    <label key={airline} className="flex items-center text-xs sm:text-sm">
+                    <label key={airline} className={`flex items-center text-xs sm:text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                       <input
                         type="checkbox"
                         checked={filters.airlines.includes(airline)}
                         onChange={() => handleAirlineFilterChange(airline)}
-                        className="mr-2 rounded text-emerald-500 focus:ring-emerald-500"
+                        className={`mr-2 rounded ${isDark ? 'bg-gray-600 border-gray-500' : ''} text-emerald-500 focus:ring-emerald-500`}
                       />
                       {airline}
                     </label>
@@ -299,9 +399,9 @@ export default function FlightList({ flights = [], loading = false, error = null
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Price Range</h3>
+                <h3 className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} mb-2`}>Price Range</h3>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                  <div className={`flex items-center justify-between text-xs sm:text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                     <span>₹{filters.priceRange.min}</span>
                     <span>₹{filters.priceRange.max}</span>
                   </div>
@@ -312,7 +412,7 @@ export default function FlightList({ flights = [], loading = false, error = null
                     step="500"
                     value={filters.priceRange.min}
                     onChange={(e) => handlePriceRangeChange(e.target.value, 'min')}
-                    className="w-full slider-thumb accent-emerald-500"
+                    className={`w-full slider-thumb accent-emerald-500 ${isDark ? 'bg-gray-600' : ''}`}
                   />
                   <input
                     type="range"
@@ -321,15 +421,15 @@ export default function FlightList({ flights = [], loading = false, error = null
                     step="500"
                     value={filters.priceRange.max}
                     onChange={(e) => handlePriceRangeChange(e.target.value, 'max')}
-                    className="w-full slider-thumb accent-emerald-500"
+                    className={`w-full slider-thumb accent-emerald-500 ${isDark ? 'bg-gray-600' : ''}`}
                   />
                 </div>
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Departure Time</h3>
+                <h3 className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'} mb-2`}>Departure Time</h3>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                  <div className={`flex items-center justify-between text-xs sm:text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                     <span>{filters.departureTime.min}:00</span>
                     <span>{filters.departureTime.max}:00</span>
                   </div>
@@ -339,7 +439,7 @@ export default function FlightList({ flights = [], loading = false, error = null
                     max="24"
                     value={filters.departureTime.min}
                     onChange={(e) => handleDepartureTimeChange(e.target.value, 'min')}
-                    className="w-full slider-thumb accent-emerald-500"
+                    className={`w-full slider-thumb accent-emerald-500 ${isDark ? 'bg-gray-600' : ''}`}
                   />
                   <input
                     type="range"
@@ -347,57 +447,39 @@ export default function FlightList({ flights = [], loading = false, error = null
                     max="24"
                     value={filters.departureTime.max}
                     onChange={(e) => handleDepartureTimeChange(e.target.value, 'max')}
-                    className="w-full slider-thumb accent-emerald-500"
+                    className={`w-full slider-thumb accent-emerald-500 ${isDark ? 'bg-gray-600' : ''}`}
                   />
                 </div>
               </div>
             </div>
             
-            <div className="mt-3 sm:mt-4 flex justify-end">
+            <div className="mt-4 flex justify-end">
               <button
                 onClick={clearAllFilters}
-                className="px-3 py-1.5 text-xs sm:text-sm text-gray-600 hover:text-gray-800"
+                className={`px-3 py-1.5 rounded-md text-sm ${
+                  isDark 
+                    ? 'bg-gray-600 hover:bg-gray-500 text-gray-200' 
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                }`}
               >
                 Clear All
-              </button>
-              <button
-                onClick={toggleFilterMenu}
-                className="ml-2 px-3 py-1.5 bg-emerald-500 text-white rounded-md text-xs sm:text-sm hover:bg-emerald-600"
-              >
-                Apply Filters
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {loading ? (
-        <div className="py-20 flex justify-center">
-          <div className="w-10 h-10 border-4 border-emerald-500 border-opacity-20 rounded-full border-t-emerald-600 animate-spin"></div>
-        </div>
-      ) : error ? (
-        <div className="py-10 text-center">
-          <div className="text-red-500 mb-4">{error}</div>
-          <div className="text-sm text-gray-600">Please try modifying your search criteria</div>
-        </div>
-      ) : flights.length === 0 ? (
-        <div className="py-10 text-center">
-          <div className="text-lg text-gray-700 mb-2">No flights found</div>
-          <div className="text-sm text-gray-600">Please try different dates or routes</div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredFlights.map((flight) => (
-            <FlightCard
-              key={flight.id}
-              flight={flight}
-              onClick={() => handleFlightSelect(flight)}
-              selected={selectedFlightId === flight.id}
-              showDetails={selectedFlightId === flight.id}
-            />
-          ))}
-        </div>
-      )}
+      
+      <div className="space-y-4">
+        {filteredFlights.map((flight) => (
+          <FlightCard
+            key={flight.id}
+            flight={flight}
+            onClick={() => handleFlightSelect(flight)}
+            selected={flight.id === selectedFlightId}
+            priceIncreased={flight.priceIncreased}
+          />
+        ))}
+      </div>
     </div>
   );
 } 

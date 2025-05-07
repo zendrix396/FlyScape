@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { adminApi } from '../../services/apiService';
 import { FaPlus, FaFilter, FaSync, FaEdit, FaTrash, FaCalendarAlt, FaClock, FaRupeeSign, FaPlane } from 'react-icons/fa';
+import { adminApi } from '../../services/apiService';
+import { formatDate } from '../../utils/dateUtils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const FlightManagement = () => {
   const [flights, setFlights] = useState([]);
@@ -22,6 +24,7 @@ const FlightManagement = () => {
     page: 1,
     limit: 10
   });
+  const { isDark } = useTheme();
 
   useEffect(() => {
     fetchFlights();
@@ -100,19 +103,6 @@ const FlightManagement = () => {
     }
   };
 
-  const formatDate = (timestamp) => {
-    if (!timestamp) return 'N/A';
-    
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return new Intl.DateTimeFormat('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
-  };
-  
   const formatDuration = (duration) => {
     if (!duration) return 'N/A';
     return `${duration} mins`;
@@ -129,87 +119,115 @@ const FlightManagement = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">Flight Management</h1>
+        <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-800'} mb-4 sm:mb-0`}>Flight Management</h1>
         <div className="flex flex-wrap gap-3 mt-2 sm:mt-4">
           <Link 
             to="/admin/flights/add" 
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-colors"
+            className={`flex items-center gap-2 px-4 py-2 ${
+              isDark 
+                ? 'bg-emerald-800 text-emerald-200 hover:bg-emerald-700' 
+                : 'bg-emerald-500 text-white hover:bg-emerald-600'
+            } rounded-md transition-colors`}
           >
             <FaPlus /> Add Flight
           </Link>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-              showFilters 
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md ${
+              isDark 
+                ? 'bg-gray-800 text-emerald-400 hover:bg-gray-700' 
+                : 'bg-gray-100 text-emerald-600 hover:bg-gray-200'
+            } transition-colors`}
           >
-            <FaFilter /> Filters
+            <FaFilter className={`mr-2 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} /> Filters
           </button>
         </div>
       </div>
 
       {showFilters && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-emerald-100">
+        <div className={`bg-white rounded-lg shadow-md p-6 mb-6 border ${
+          isDark 
+            ? 'border-gray-700' 
+            : 'border-gray-200'
+        }`}>
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Airline</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Airline</label>
               <input
                 type="text"
                 name="airline"
                 value={filters.airline}
                 onChange={handleFilterChange}
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className={`w-full px-4 py-2 border ${
+                  isDark 
+                    ? 'bg-gray-800 text-gray-300 border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    : 'bg-white text-gray-700 border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                } rounded-md`}
                 placeholder="Any airline"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">From City</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>From City</label>
               <input
                 type="text"
                 name="fromCity"
                 value={filters.fromCity}
                 onChange={handleFilterChange}
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className={`w-full px-4 py-2 border ${
+                  isDark 
+                    ? 'bg-gray-800 text-gray-300 border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    : 'bg-white text-gray-700 border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                } rounded-md`}
                 placeholder="Departure city"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">To City</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>To City</label>
               <input
                 type="text"
                 name="toCity"
                 value={filters.toCity}
                 onChange={handleFilterChange}
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className={`w-full px-4 py-2 border ${
+                  isDark 
+                    ? 'bg-gray-800 text-gray-300 border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    : 'bg-white text-gray-700 border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                } rounded-md`}
                 placeholder="Arrival city"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Min Price (₹)</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Min Price (₹)</label>
               <input
                 type="number"
                 name="minPrice"
                 value={filters.minPrice}
                 onChange={handleFilterChange}
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className={`w-full px-4 py-2 border ${
+                  isDark 
+                    ? 'bg-gray-800 text-gray-300 border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    : 'bg-white text-gray-700 border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                } rounded-md`}
                 placeholder="0"
                 min="0"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Price (₹)</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Max Price (₹)</label>
               <input
                 type="number"
                 name="maxPrice"
                 value={filters.maxPrice}
                 onChange={handleFilterChange}
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className={`w-full px-4 py-2 border ${
+                  isDark 
+                    ? 'bg-gray-800 text-gray-300 border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                    : 'bg-white text-gray-700 border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                } rounded-md`}
                 placeholder="50000"
                 min="0"
               />
@@ -218,7 +236,11 @@ const FlightManagement = () => {
             <div className="flex items-end gap-3">
               <button
                 type="submit"
-                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-colors"
+                className={`px-4 py-2 ${
+                  isDark 
+                    ? 'bg-emerald-800 text-emerald-200 hover:bg-emerald-700' 
+                    : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                } rounded-md transition-colors`}
               >
                 Search
               </button>
@@ -226,7 +248,11 @@ const FlightManagement = () => {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                className={`px-4 py-2 ${
+                  isDark 
+                    ? 'bg-gray-800 text-emerald-400 hover:bg-gray-700' 
+                    : 'bg-gray-100 text-emerald-600 hover:bg-gray-200'
+                } rounded-md transition-colors`}
               >
                 Clear
               </button>
@@ -236,19 +262,35 @@ const FlightManagement = () => {
       )}
 
       {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6">
+        <div className={`bg-red-100 text-red-700 p-4 rounded-md mb-6 ${
+          isDark 
+            ? 'bg-gray-800 border border-gray-700' 
+            : 'bg-white border border-gray-200'
+        }`}>
           {error}
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden border border-emerald-100">
-        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 border-b border-emerald-200">
-          <h2 className="text-xl font-semibold text-emerald-800">
+      <div className={`${
+        isDark 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      } rounded-lg shadow-md overflow-hidden border`}>
+        <div className={`flex justify-between items-center p-4 ${
+          isDark 
+            ? 'bg-gray-700 border-b border-gray-600' 
+            : 'bg-gradient-to-r from-emerald-50 to-emerald-100 border-b border-emerald-200'
+        }`}>
+          <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-emerald-800'}`}>
             {pagination.totalFlights} {pagination.totalFlights === 1 ? 'Flight' : 'Flights'}
           </h2>
           <button
             onClick={fetchFlights}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white text-emerald-700 rounded-md border border-emerald-300 hover:bg-emerald-50 transition-colors"
+            className={`flex items-center gap-1 px-3 py-1.5 text-sm ${
+              isDark 
+                ? 'bg-gray-800 text-emerald-400 hover:bg-gray-700' 
+                : 'bg-emerald-500 text-white hover:bg-emerald-600'
+            } rounded-md`}
           >
             <FaSync className={loading ? "animate-spin" : ""} /> Refresh
           </button>
@@ -259,83 +301,95 @@ const FlightManagement = () => {
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600"></div>
           </div>
         ) : flights.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            <FaPlane className="mx-auto text-4xl mb-3 text-gray-300" />
+          <div className={`p-8 text-center ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
+            <FaPlane className={`mx-auto text-4xl mb-3 ${isDark ? 'text-gray-600' : 'text-gray-300'}`} />
             <p>No flights found</p>
             <p className="text-sm mt-2">Try adjusting your filters or add a new flight</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-700">
+              <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                     Flight
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                     Route
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                     <div className="flex items-center">
                       <FaCalendarAlt className="mr-1" /> Departure
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                     <div className="flex items-center">
                       <FaClock className="mr-1" /> Duration
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                     <div className="flex items-center">
                       <FaRupeeSign className="mr-1" /> Price
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className={`px-6 py-3 text-right text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                 {flights.map((flight) => (
-                  <tr key={flight.id} className="hover:bg-gray-50">
+                  <tr key={flight.id} className={`${isDark ? 'bg-gray-800 hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                          <FaPlane className="text-emerald-500" />
+                        <div className={`flex-shrink-0 h-10 w-10 ${
+                          isDark 
+                            ? 'bg-emerald-900/30' 
+                            : 'bg-emerald-100'
+                        } rounded-full flex items-center justify-center`}>
+                          <FaPlane className={`${isDark ? 'text-emerald-400' : 'text-emerald-500'}`} />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{flight.airline}</div>
-                          <div className="text-sm text-gray-500">{flight.flightNumber}</div>
+                          <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>{flight.airline}</div>
+                          <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{flight.flightNumber}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{flight.fromCity} → {flight.toCity}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-800'}`}>{flight.fromCity} → {flight.toCity}</div>
+                      <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {flight.availableSeats} seats available
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatDate(flight.departureTime)}</div>
+                      <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-800'}`}>{formatDate(flight.departureTime)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatDuration(flight.duration)}</div>
+                      <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-800'}`}>{formatDuration(flight.duration)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{formatPrice(flight.price)}</div>
+                      <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>{formatPrice(flight.price)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <Link
                           to={`/admin/flights/edit/${flight.id}`}
-                          className="text-emerald-600 hover:text-emerald-900"
+                          className={`p-2 rounded ${
+                            isDark 
+                              ? 'bg-gray-700 hover:bg-gray-600 text-emerald-400' 
+                              : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'
+                          }`}
                           title="Edit flight"
                         >
                           <FaEdit />
                         </Link>
                         <button
                           onClick={() => handleDeleteFlight(flight.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className={`p-2 rounded ${
+                            isDark 
+                              ? 'bg-gray-700 hover:bg-red-900/50 text-red-400' 
+                              : 'bg-red-100 hover:bg-red-200 text-red-700'
+                          }`}
                           title="Delete flight"
                         >
                           <FaTrash />
@@ -350,8 +404,8 @@ const FlightManagement = () => {
         )}
         
         {pagination.totalPages > 1 && (
-          <div className="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
-            <div className="text-sm text-gray-700">
+          <div className={`px-6 py-4 ${isDark ? 'bg-gray-700 border-t border-gray-600' : 'bg-gray-50 border-t'} flex justify-between items-center`}>
+            <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               Showing page {pagination.currentPage} of {pagination.totalPages}
             </div>
             <div className="flex gap-2">
@@ -360,8 +414,10 @@ const FlightManagement = () => {
                 disabled={pagination.currentPage === 1}
                 className={`px-4 py-2 rounded-md ${
                   pagination.currentPage === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? isDark ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : isDark 
+                      ? 'bg-gray-800 text-gray-300 border border-gray-600 hover:bg-gray-600' 
+                      : 'bg-gray-50 text-gray-700 border border-gray-300 hover:bg-gray-200'
                 }`}
               >
                 Previous
@@ -371,8 +427,10 @@ const FlightManagement = () => {
                 disabled={pagination.currentPage === pagination.totalPages}
                 className={`px-4 py-2 rounded-md ${
                   pagination.currentPage === pagination.totalPages
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? isDark ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : isDark 
+                      ? 'bg-gray-800 text-gray-300 border border-gray-600 hover:bg-gray-600' 
+                      : 'bg-gray-50 text-gray-700 border border-gray-300 hover:bg-gray-200'
                 }`}
               >
                 Next

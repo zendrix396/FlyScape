@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function AnimatedList({
   items = [],
@@ -7,8 +8,10 @@ export default function AnimatedList({
   renderItem = null,
   className = '',
 }) {
+  const { isDark } = useTheme();
+  
   return (
-    <div className={`bg-white rounded-lg ${className}`}>
+    <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg ${className}`}>
       <div className="overflow-y-auto">
         {renderItem 
           ? items.map((item, index) => renderItem(item, index))
@@ -20,7 +23,11 @@ export default function AnimatedList({
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2, delay: index * 0.05 }}
               onClick={() => onItemSelect(item, index)}
-              className="p-3 hover:bg-emerald-50 cursor-pointer border-b border-gray-100"
+              className={`p-3 cursor-pointer border-b ${
+                isDark 
+                  ? 'border-gray-700 hover:bg-gray-700 text-gray-200' 
+                  : 'border-gray-100 hover:bg-emerald-50'
+              }`}
             >
               {typeof item === 'string' ? item : item.label || JSON.stringify(item)}
             </motion.div>

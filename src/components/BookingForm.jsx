@@ -4,9 +4,11 @@ import { FaUser, FaPhone, FaEnvelope, FaCreditCard, FaCalendarAlt, FaLock, FaUse
 import SplitText from './SplitText';
 import SpotlightCard from './SpotlightCard';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function BookingForm({ flight, onSubmit }) {
   const { userProfile, updateUserWallet } = useAuth();
+  const { isDark } = useTheme();
   const [passengersCount, setPassengersCount] = useState(1);
   const [formData, setFormData] = useState({
     passengers: [
@@ -210,24 +212,24 @@ export default function BookingForm({ flight, onSubmit }) {
   return (
     <div className="w-full max-w-md mx-auto">
       <SpotlightCard 
-        className="bg-white rounded-xl shadow-md overflow-hidden border border-emerald-100"
-        spotlightColor="rgba(16, 185, 129, 0.1)"
+        className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-emerald-100'} rounded-xl shadow-md overflow-hidden border`}
+        spotlightColor={isDark ? "rgba(16, 185, 129, 0.1)" : "rgba(16, 185, 129, 0.1)"}
         spotlightSize={250}
       >
         <div className="p-6">
           <div className="text-center mb-6">
             <SplitText
               text={formStage === 1 ? "Passenger Details" : "Payment Information"}
-              className="text-2xl font-bold text-gray-800"
+              className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}
               delay={50}
             />
             <div className="mt-4 flex justify-center">
               <div className="flex items-center">
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${formStage >= 1 ? 'bg-emerald-500 text-white' : 'bg-gray-200'}`}>
+                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${formStage >= 1 ? 'bg-emerald-500 text-white' : isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
                   1
                 </div>
-                <div className={`h-1 w-16 ${formStage >= 2 ? 'bg-emerald-500' : 'bg-gray-200'}`}></div>
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${formStage >= 2 ? 'bg-emerald-500 text-white' : 'bg-gray-200'}`}>
+                <div className={`h-1 w-16 ${formStage >= 2 ? 'bg-emerald-500' : isDark ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${formStage >= 2 ? 'bg-emerald-500 text-white' : isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
                   2
                 </div>
               </div>
@@ -235,7 +237,7 @@ export default function BookingForm({ flight, onSubmit }) {
           </div>
 
           {formErrors.submission && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md border border-red-200">
+            <div className={`mb-4 p-3 ${isDark ? 'bg-red-900/30 text-red-300 border-red-900/50' : 'bg-red-50 text-red-700 border-red-200'} rounded-md border`}>
               {formErrors.submission}
             </div>
           )}
@@ -243,22 +245,34 @@ export default function BookingForm({ flight, onSubmit }) {
           {formStage === 1 ? (
             <form onSubmit={proceedToPayment}>
               <div className="mb-4 flex justify-between items-center">
-                <label className="block text-gray-700 text-sm font-medium">
+                <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} text-sm font-medium`}>
                   Number of Passengers
                 </label>
                 <div className="flex items-center">
                   <button 
                     type="button"
-                    className={`p-2 rounded-md ${passengersCount > 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'}`}
+                    className={`p-2 rounded-md ${
+                      passengersCount > 1 
+                      ? isDark 
+                        ? 'bg-emerald-900/30 text-emerald-400' 
+                        : 'bg-emerald-100 text-emerald-700' 
+                      : isDark 
+                        ? 'bg-gray-700 text-gray-400' 
+                        : 'bg-gray-100 text-gray-400'
+                    }`}
                     onClick={() => passengersCount > 1 && setPassengersCount(prev => prev - 1)}
                     disabled={passengersCount <= 1}
                   >
                     <FaUserMinus />
                   </button>
-                  <span className="px-4 text-lg font-medium">{passengersCount}</span>
+                  <span className={`px-4 text-lg font-medium ${isDark ? 'text-white' : ''}`}>{passengersCount}</span>
                   <button 
                     type="button"
-                    className="p-2 bg-emerald-100 text-emerald-700 rounded-md"
+                    className={`p-2 rounded-md ${
+                      isDark 
+                      ? 'bg-emerald-900/30 text-emerald-400' 
+                      : 'bg-emerald-100 text-emerald-700'
+                    }`}
                     onClick={() => setPassengersCount(prev => prev + 1)}
                   >
                     <FaUserPlus />
@@ -267,11 +281,11 @@ export default function BookingForm({ flight, onSubmit }) {
               </div>
 
               {formData.passengers.map((passenger, index) => (
-                <div key={index} className="mb-6 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium text-gray-700 mb-3">Passenger {index + 1}</h3>
+                <div key={index} className={`mb-6 p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  <h3 className={`font-medium ${isDark ? 'text-white' : 'text-gray-700'} mb-3`}>Passenger {index + 1}</h3>
                   
                   <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor={`passenger-${index}-name`}>
+                    <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} text-sm font-medium mb-2`} htmlFor={`passenger-${index}-name`}>
                       Full Name
                     </label>
                     <div className="relative">
@@ -279,8 +293,12 @@ export default function BookingForm({ flight, onSubmit }) {
                         <FaUser className="text-gray-400" />
                       </div>
                       <input
-                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
-                          formErrors[`passenger${index}_name`] ? 'border-red-500' : 'border-gray-300'
+                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
+                          isDark 
+                          ? 'bg-gray-600 border-gray-600 text-white placeholder-gray-400' 
+                          : 'text-gray-700 border-gray-300'
+                        } ${
+                          formErrors[`passenger${index}_name`] ? 'border-red-500' : ''
                         }`}
                         id={`passenger-${index}-name`}
                         type="text"
@@ -295,7 +313,7 @@ export default function BookingForm({ flight, onSubmit }) {
                   </div>
 
                   <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor={`passenger-${index}-email`}>
+                    <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} text-sm font-medium mb-2`} htmlFor={`passenger-${index}-email`}>
                       Email
                     </label>
                     <div className="relative">
@@ -303,8 +321,12 @@ export default function BookingForm({ flight, onSubmit }) {
                         <FaEnvelope className="text-gray-400" />
                       </div>
                       <input
-                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
-                          formErrors[`passenger${index}_email`] ? 'border-red-500' : 'border-gray-300'
+                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
+                          isDark 
+                          ? 'bg-gray-600 border-gray-600 text-white placeholder-gray-400' 
+                          : 'text-gray-700 border-gray-300'
+                        } ${
+                          formErrors[`passenger${index}_email`] ? 'border-red-500' : ''
                         }`}
                         id={`passenger-${index}-email`}
                         type="email"
@@ -319,7 +341,7 @@ export default function BookingForm({ flight, onSubmit }) {
                   </div>
 
                   <div className="mb-3">
-                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor={`passenger-${index}-phone`}>
+                    <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} text-sm font-medium mb-2`} htmlFor={`passenger-${index}-phone`}>
                       Phone Number
                     </label>
                     <div className="relative">
@@ -327,8 +349,12 @@ export default function BookingForm({ flight, onSubmit }) {
                         <FaPhone className="text-gray-400" />
                       </div>
                       <input
-                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
-                          formErrors[`passenger${index}_phone`] ? 'border-red-500' : 'border-gray-300'
+                        className={`appearance-none border rounded-md w-full py-3 pl-10 pr-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-emerald-500 ${
+                          isDark 
+                          ? 'bg-gray-600 border-gray-600 text-white placeholder-gray-400' 
+                          : 'text-gray-700 border-gray-300'
+                        } ${
+                          formErrors[`passenger${index}_phone`] ? 'border-red-500' : ''
                         }`}
                         id={`passenger-${index}-phone`}
                         type="tel"
@@ -344,26 +370,26 @@ export default function BookingForm({ flight, onSubmit }) {
                 </div>
               ))}
 
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className={`mb-6 p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Price per passenger:</span>
-                  <span className="font-medium">₹{ticketPrice}</span>
+                  <span className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Price per passenger:</span>
+                  <span className={`font-medium ${isDark ? 'text-white' : ''}`}>₹{ticketPrice}</span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
-                  <span className="text-gray-700">Number of passengers:</span>
-                  <span className="font-medium">{passengersCount}</span>
+                  <span className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Number of passengers:</span>
+                  <span className={`font-medium ${isDark ? 'text-white' : ''}`}>{passengersCount}</span>
                 </div>
-                <div className="border-t border-gray-200 my-2 pt-2"></div>
+                <div className={`border-t my-2 pt-2 ${isDark ? 'border-gray-600' : 'border-gray-200'}`}></div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-700 font-medium">Total:</span>
-                  <span className="text-lg font-bold text-emerald-600">₹{totalPrice}</span>
+                  <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Total:</span>
+                  <span className={`text-lg font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>₹{totalPrice}</span>
                 </div>
               </div>
 
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline"
+                  className={`${isDark ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-emerald-600 hover:bg-emerald-700'} text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline`}
                 >
                   Continue to Payment
                 </button>
@@ -373,11 +399,19 @@ export default function BookingForm({ flight, onSubmit }) {
             // Payment form (Stage 2)
             <form onSubmit={handleSubmit}>
               <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-medium mb-2">
+                <label className={`block ${isDark ? 'text-gray-300' : 'text-gray-700'} text-sm font-medium mb-2`}>
                   Payment Method
                 </label>
                 <div className="grid grid-cols-2 gap-4">
-                  <label className={`flex items-center space-x-3 p-4 border rounded-md cursor-pointer transition-colors ${formData.paymentMethod === 'card' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300'}`}>
+                  <label className={`flex items-center space-x-3 p-4 border rounded-md cursor-pointer transition-colors ${
+                    formData.paymentMethod === 'card' 
+                    ? isDark 
+                      ? 'border-emerald-500 bg-emerald-900/20' 
+                      : 'border-emerald-500 bg-emerald-50' 
+                    : isDark 
+                      ? 'border-gray-600' 
+                      : 'border-gray-300'
+                  }`}>
                     <input
                       type="radio"
                       name="paymentMethod"
@@ -386,10 +420,18 @@ export default function BookingForm({ flight, onSubmit }) {
                       onChange={handleChange}
                       className="form-radio text-emerald-600 h-4 w-4"
                     />
-                    <span>Credit Card</span>
+                    <span className={isDark ? 'text-white' : ''}>Credit Card</span>
                   </label>
                   
-                  <label className={`flex items-center space-x-3 p-4 border rounded-md cursor-pointer transition-colors ${formData.paymentMethod === 'wallet' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300'}`}>
+                  <label className={`flex items-center space-x-3 p-4 border rounded-md cursor-pointer transition-colors ${
+                    formData.paymentMethod === 'wallet' 
+                    ? isDark 
+                      ? 'border-emerald-500 bg-emerald-900/20' 
+                      : 'border-emerald-500 bg-emerald-50' 
+                    : isDark 
+                      ? 'border-gray-600' 
+                      : 'border-gray-300'
+                  }`}>
                     <input
                       type="radio"
                       name="paymentMethod"
@@ -398,7 +440,7 @@ export default function BookingForm({ flight, onSubmit }) {
                       onChange={handleChange}
                       className="form-radio text-emerald-600 h-4 w-4"
                     />
-                    <span>Wallet</span>
+                    <span className={isDark ? 'text-white' : ''}>Wallet</span>
                   </label>
                 </div>
               </div>
