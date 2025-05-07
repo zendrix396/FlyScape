@@ -5,6 +5,7 @@ import FlightSearch from '../components/FlightSearch';
 import { searchFlights } from '../services/flightService';
 import { useBooking } from '../contexts/BookingContext';
 import { adjustFlightPrice } from '../services/flightService';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function FlightsPage() {
   const [flights, setFlights] = useState([]);
@@ -13,6 +14,7 @@ export default function FlightsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   
   const { recordFlightSearch, shouldIncreasePriceBySearchHistory } = useBooking();
 
@@ -239,23 +241,23 @@ export default function FlightsPage() {
   // Full page loading indicator
   if (loading && !searchParams) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'} flex items-center justify-center`}>
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-emerald-500 border-opacity-20 rounded-full border-t-emerald-600 animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading flights...</p>
+          <p className={`mt-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Loading flights...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'} py-4 sm:py-8`}>
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         <div className="mb-4 sm:mb-8">
           <FlightSearch onSearch={handleSearch} />
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-3 sm:p-6">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-3 sm:p-6`}>
           <FlightList 
             flights={flights} 
             loading={loading}

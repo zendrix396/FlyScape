@@ -145,7 +145,7 @@ export default function Voucher({ booking }) {
       // Add company logo/name on the colored header
       pdf.setFontSize(24);
       pdf.setTextColor(255, 255, 255); // White
-      pdf.text('AeroVoyage', margin, 25);
+      pdf.text('FlyScape', margin, 25);
       
       // Add a simple plane icon next to the company name
       // Draw a simple plane shape with lines
@@ -359,11 +359,11 @@ export default function Voucher({ booking }) {
       
       pdf.setFontSize(10);
       pdf.setTextColor(107, 114, 128);
-      pdf.text('AeroVoyage - Your journey, our priority', margin, pageHeight - 8);
-      pdf.text('www.aerovoyage.com', pageWidth - margin - 40, pageHeight - 8);
+      pdf.text('FlyScape - Your journey, our priority', margin, pageHeight - 8);
+      pdf.text('www.flyscape.com', pageWidth - margin - 40, pageHeight - 8);
       
       // Save the PDF
-      pdf.save(`AeroVoyage_Boarding_Pass_${bookingId || 'Ticket'}.pdf`);
+      pdf.save(`FlyScape_Boarding_Pass_${bookingId || 'Ticket'}.pdf`);
       
       setIsDownloading(false);
     } catch (error) {

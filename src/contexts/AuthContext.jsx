@@ -16,8 +16,8 @@ import Cookies from 'js-cookie';
 
 // Cookie configuration
 const COOKIE_EXPIRY = 7; // days
-const USER_COOKIE = 'aerovoyage_user';
-const PROFILE_COOKIE = 'aerovoyage_profile';
+const USER_COOKIE = 'flyscape_user';
+const PROFILE_COOKIE = 'flyscape_profile';
 
 const AuthContext = createContext();
 

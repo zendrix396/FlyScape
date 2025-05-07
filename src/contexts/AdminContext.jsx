@@ -62,7 +62,7 @@ export const AdminProvider = ({ children }) => {
         const isAdminByEmail = currentUser.email === ADMIN_EMAIL;
         
         // For development/testing purposes, check against a list of admin emails
-        const additionalAdminEmails = ['test@example.com', 'admin@aerovoyage.com'];
+        const additionalAdminEmails = ['test@example.com', 'admin@flyscape.com'];
         const isInAdminList = additionalAdminEmails.includes(currentUser.email);
         
         // User is admin if any of these checks pass

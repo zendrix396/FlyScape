@@ -1,342 +1,514 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { FaSave, FaArrowLeft, FaPlane, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaRupeeSign, FaChair } from 'react-icons/fa';
 import { adminApi } from '../../services/apiService';
-import { FaSave, FaArrowLeft, FaPlus, FaRegClock, FaCalendarAlt } from 'react-icons/fa';
-import moment from 'moment';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const FlightForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isEditMode = Boolean(id);
+  const isEditMode = !!id;
+  const { isDark } = useTheme();
   
-  const [formData, setFormData] = useState({
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [flightData, setFlightData] = useState({
     airline: '',
     flightNumber: '',
     fromCity: '',
+    from: '',
     toCity: '',
-    departureTime: moment().add(1, 'day').format('YYYY-MM-DDTHH:mm'),
+    to: '',
+    departureDate: '',
+    departureTime: '',
     duration: '',
     price: '',
-    availableSeats: 50,
+    availableSeats: '',
+    aircraft: '',
+    hasStopover: false,
+    stopoverLocation: '',
+    stopoverDuration: '',
+    mealOptions: [],
   });
-  
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-  
-  const airlines = [
-    'IndiGo', 
-    'Air India', 
-    'SpiceJet', 
-    'Vistara', 
-    'GoAir', 
-    'AirAsia India'
-  ];
-  
+
   useEffect(() => {
     if (isEditMode) {
       fetchFlightData();
     }
   }, [id]);
-  
+
   const fetchFlightData = async () => {
     try {
       setLoading(true);
-      const flightData = await adminApi.getFlight(id);
+      const data = await adminApi.getFlight(id);
       
-      // Convert Firestore timestamp to Date object if needed
-      let departureTime = flightData.departureTime;
-      if (departureTime && departureTime.toDate) {
-        departureTime = departureTime.toDate();
-      } else if (typeof departureTime === 'string') {
-        departureTime = new Date(departureTime);
-      }
+      // Format date and time for form inputs
+      const departureDateTime = data.departureTime.toDate ? data.departureTime.toDate() : new Date(data.departureTime);
       
-      setFormData({
-        ...flightData,
-        departureTime: moment(departureTime).format('YYYY-MM-DDTHH:mm')
+      setFlightData({
+        ...data,
+        departureDate: departureDateTime.toISOString().split('T')[0],
+        departureTime: departureDateTime.toTimeString().slice(0, 5),
       });
     } catch (err) {
-      console.error("Error fetching flight data:", err);
-      setError(err.message || "Failed to load flight data. Please try again.");
+      console.error("Error fetching flight:", err);
+      setError("Failed to fetch flight data. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: name === 'price' || name === 'availableSeats' ? Number(value) : value
+    const { name, value, type, checked } = e.target;
+    
+    setFlightData({
+      ...flightData,
+      [name]: type === 'checkbox' ? checked : value
     });
   };
-  
-  const calculateArrivalTime = () => {
-    if (!formData.departureTime || !formData.duration) return '';
+
+  const handleMealOptionChange = (option) => {
+    const updatedMealOptions = [...flightData.mealOptions];
     
-    // Parse duration (e.g., "2h 30m")
-    const durationMatch = formData.duration.match(/(\d+)h\s*(\d+)m/);
-    if (!durationMatch) return '';
+    if (updatedMealOptions.includes(option)) {
+      const index = updatedMealOptions.indexOf(option);
+      updatedMealOptions.splice(index, 1);
+    } else {
+      updatedMealOptions.push(option);
+    }
     
-    const hours = parseInt(durationMatch[1]) || 0;
-    const minutes = parseInt(durationMatch[2]) || 0;
-    
-    // Calculate arrival time
-    const departure = moment(formData.departureTime);
-    const arrival = departure.clone().add(hours, 'hours').add(minutes, 'minutes');
-    
-    return arrival.toDate();
+    setFlightData({
+      ...flightData,
+      mealOptions: updatedMealOptions
+    });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate form
-    if (!formData.airline || !formData.flightNumber || 
-        !formData.fromCity || !formData.toCity || 
-        !formData.departureTime || !formData.duration || 
-        !formData.price) {
-      setError('Please fill in all required fields');
-      return;
-    }
-    
-    // Make sure origin and destination are different
-    if (formData.fromCity === formData.toCity) {
-      setError('Origin and destination cities cannot be the same');
-      return;
-    }
+    setLoading(true);
+    setError(null);
     
     try {
-      setSubmitting(true);
-      setError(null);
+      // Combine date and time for the departure timestamp
+      const departureDateTime = new Date(`${flightData.departureDate}T${flightData.departureTime}`);
       
-      // Convert date strings to proper format for the API
-      const departureDate = new Date(formData.departureTime);
-      const arrivalTime = calculateArrivalTime();
-      
-      const flightData = {
-        ...formData,
-        departureTime: departureDate,
-        arrivalTime: arrivalTime
+      const flightDataToSave = {
+        ...flightData,
+        departureTime: departureDateTime,
+        price: parseFloat(flightData.price),
+        availableSeats: parseInt(flightData.availableSeats, 10)
       };
       
       if (isEditMode) {
-        await adminApi.updateFlight(id, flightData);
+        await adminApi.updateFlight(id, flightDataToSave);
       } else {
-        await adminApi.createFlight(flightData);
+        await adminApi.addFlight(flightDataToSave);
       }
       
-      // Navigate back to flight management after successful submission
       navigate('/admin/flights');
     } catch (err) {
       console.error("Error saving flight:", err);
-      setError(err.message || `Failed to ${isEditMode ? 'update' : 'create'} flight. Please try again.`);
+      setError("Failed to save flight. Please check your input and try again.");
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
-  
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <div className="animate-spin inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full mb-4"></div>
-        <p className="text-gray-600">Loading flight data...</p>
-      </div>
-    );
-  }
-  
+
+  const mealOptions = ['Vegetarian', 'Non-Vegetarian', 'Vegan', 'Kosher', 'Halal', 'Diabetic', 'Gluten-Free'];
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>
           {isEditMode ? 'Edit Flight' : 'Add New Flight'}
         </h1>
-        <div className="flex flex-wrap gap-3 mt-2 sm:mt-4">
-          <Link 
-            to="/admin/flights" 
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-md hover:from-gray-200 hover:to-gray-300 transition-colors border border-gray-300"
-          >
-            <FaArrowLeft /> Back to Flights
-          </Link>
-        </div>
+        <Link 
+          to="/admin/flights" 
+          className={`flex items-center px-4 py-2 rounded-lg shadow-sm transition-colors ${
+            isDark 
+              ? 'bg-gray-800 hover:bg-gray-700 text-white' 
+              : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
+          }`}
+        >
+          <FaArrowLeft className={`mr-2 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
+          Back to Flights
+        </Link>
       </div>
-      
+
       {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6 border border-red-200">
+        <div className={`p-4 mb-6 rounded-lg ${isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-700'}`}>
           {error}
         </div>
       )}
-      
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 border border-emerald-100">
+
+      <form onSubmit={handleSubmit} className={`rounded-lg shadow-md p-6 ${
+        isDark 
+          ? 'bg-gray-800 border border-gray-700' 
+          : 'bg-white'
+      }`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Airline */}
+          {/* Airline Information */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Airline *
-            </label>
-            <select
-              name="airline"
-              value={formData.airline}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
-              required
-            >
-              <option value="">Select Airline</option>
-              {airlines.map(airline => (
-                <option key={airline} value={airline}>{airline}</option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Flight Number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Flight Number *
-            </label>
-            <input
-              type="text"
-              name="flightNumber"
-              value={formData.flightNumber}
-              onChange={handleChange}
-              placeholder="e.g. AI101"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
-              required
-            />
-          </div>
-          
-          {/* From City */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              From City *
-            </label>
-            <input
-              type="text"
-              name="fromCity"
-              value={formData.fromCity}
-              onChange={handleChange}
-              placeholder="e.g. Delhi"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
-              required
-            />
-          </div>
-          
-          {/* To City */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              To City *
-            </label>
-            <input
-              type="text"
-              name="toCity"
-              value={formData.toCity}
-              onChange={handleChange}
-              placeholder="e.g. Mumbai"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
-              required
-            />
-          </div>
-          
-          {/* Departure Time */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Departure Time *
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
-                <FaCalendarAlt />
-              </span>
-              <input
-                type="datetime-local"
-                name="departureTime"
-                value={formData.departureTime}
-                onChange={handleChange}
-                className="w-full pl-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
-                required
-              />
+            <h2 className={`text-lg font-medium mb-4 flex items-center ${isDark ? 'text-white' : 'text-gray-700'}`}>
+              <FaPlane className={`mr-2 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
+              Airline Information
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Airline Name*
+                </label>
+                <input
+                  type="text"
+                  name="airline"
+                  value={flightData.airline}
+                  onChange={handleChange}
+                  required
+                  className={`w-full px-4 py-2 rounded-lg border ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                      : 'border-gray-300 focus:border-emerald-500'
+                  }`}
+                  placeholder="e.g., Air India, IndiGo"
+                />
+              </div>
+              
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Flight Number*
+                </label>
+                <input
+                  type="text"
+                  name="flightNumber"
+                  value={flightData.flightNumber}
+                  onChange={handleChange}
+                  required
+                  className={`w-full px-4 py-2 rounded-lg border ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                      : 'border-gray-300 focus:border-emerald-500'
+                  }`}
+                  placeholder="e.g., AI101, 6E301"
+                />
+              </div>
+              
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Aircraft Type
+                </label>
+                <input
+                  type="text"
+                  name="aircraft"
+                  value={flightData.aircraft}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-2 rounded-lg border ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                      : 'border-gray-300 focus:border-emerald-500'
+                  }`}
+                  placeholder="e.g., Boeing 777, Airbus A320"
+                />
+              </div>
             </div>
           </div>
           
-          {/* Duration */}
+          {/* Route Information */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Duration *
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
-                <FaRegClock />
-              </span>
-              <input
-                type="text"
-                name="duration"
-                value={formData.duration}
-                onChange={handleChange}
-                placeholder="e.g. 2h 30m"
-                className="w-full pl-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
-                required
-              />
+            <h2 className={`text-lg font-medium mb-4 flex items-center ${isDark ? 'text-white' : 'text-gray-700'}`}>
+              <FaMapMarkerAlt className={`mr-2 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
+              Route Information
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    From City*
+                  </label>
+                  <input
+                    type="text"
+                    name="fromCity"
+                    value={flightData.fromCity}
+                    onChange={handleChange}
+                    required
+                    className={`w-full px-4 py-2 rounded-lg border ${
+                      isDark 
+                        ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                        : 'border-gray-300 focus:border-emerald-500'
+                    }`}
+                    placeholder="e.g., Mumbai"
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Airport Code*
+                  </label>
+                  <input
+                    type="text"
+                    name="from"
+                    value={flightData.from}
+                    onChange={handleChange}
+                    required
+                    className={`w-full px-4 py-2 rounded-lg border ${
+                      isDark 
+                        ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                        : 'border-gray-300 focus:border-emerald-500'
+                    }`}
+                    placeholder="e.g., BOM"
+                    maxLength="3"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    To City*
+                  </label>
+                  <input
+                    type="text"
+                    name="toCity"
+                    value={flightData.toCity}
+                    onChange={handleChange}
+                    required
+                    className={`w-full px-4 py-2 rounded-lg border ${
+                      isDark 
+                        ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                        : 'border-gray-300 focus:border-emerald-500'
+                    }`}
+                    placeholder="e.g., Delhi"
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Airport Code*
+                  </label>
+                  <input
+                    type="text"
+                    name="to"
+                    value={flightData.to}
+                    onChange={handleChange}
+                    required
+                    className={`w-full px-4 py-2 rounded-lg border ${
+                      isDark 
+                        ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                        : 'border-gray-300 focus:border-emerald-500'
+                    }`}
+                    placeholder="e.g., DEL"
+                    maxLength="3"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    id="hasStopover"
+                    name="hasStopover"
+                    checked={flightData.hasStopover}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="hasStopover" className={`ml-2 block text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    This flight has a stopover
+                  </label>
+                </div>
+                
+                {flightData.hasStopover && (
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Stopover Location
+                      </label>
+                      <input
+                        type="text"
+                        name="stopoverLocation"
+                        value={flightData.stopoverLocation}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-2 rounded-lg border ${
+                          isDark 
+                            ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                            : 'border-gray-300 focus:border-emerald-500'
+                        }`}
+                        placeholder="e.g., Hyderabad (HYD)"
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Stopover Duration
+                      </label>
+                      <input
+                        type="text"
+                        name="stopoverDuration"
+                        value={flightData.stopoverDuration}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-2 rounded-lg border ${
+                          isDark 
+                            ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                            : 'border-gray-300 focus:border-emerald-500'
+                        }`}
+                        placeholder="e.g., 1h 30m"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <p className="text-sm text-gray-500 mt-1">Format: "2h 30m" for 2 hours and 30 minutes</p>
           </div>
           
-          {/* Price */}
+          {/* Schedule Information */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Price (₹) *
-            </label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              min="1000"
-              step="100"
-              placeholder="e.g. 3000"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
-              required
-            />
+            <h2 className={`text-lg font-medium mb-4 flex items-center ${isDark ? 'text-white' : 'text-gray-700'}`}>
+              <FaCalendarAlt className={`mr-2 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
+              Schedule Information
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Departure Date*
+                  </label>
+                  <input
+                    type="date"
+                    name="departureDate"
+                    value={flightData.departureDate}
+                    onChange={handleChange}
+                    required
+                    className={`w-full px-4 py-2 rounded-lg border ${
+                      isDark 
+                        ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                        : 'border-gray-300 focus:border-emerald-500'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Departure Time*
+                  </label>
+                  <input
+                    type="time"
+                    name="departureTime"
+                    value={flightData.departureTime}
+                    onChange={handleChange}
+                    required
+                    className={`w-full px-4 py-2 rounded-lg border ${
+                      isDark 
+                        ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                        : 'border-gray-300 focus:border-emerald-500'
+                    }`}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Flight Duration*
+                </label>
+                <input
+                  type="text"
+                  name="duration"
+                  value={flightData.duration}
+                  onChange={handleChange}
+                  required
+                  className={`w-full px-4 py-2 rounded-lg border ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                      : 'border-gray-300 focus:border-emerald-500'
+                  }`}
+                  placeholder="e.g., 2h 15m"
+                />
+              </div>
+            </div>
           </div>
           
-          {/* Available Seats */}
+          {/* Pricing and Capacity */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Available Seats
-            </label>
-            <input
-              type="number"
-              name="availableSeats"
-              value={formData.availableSeats}
-              onChange={handleChange}
-              min="0"
-              placeholder="e.g. 50"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 border-emerald-200"
-            />
+            <h2 className={`text-lg font-medium mb-4 flex items-center ${isDark ? 'text-white' : 'text-gray-700'}`}>
+              <FaRupeeSign className={`mr-2 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
+              Pricing and Capacity
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Ticket Price (₹)*
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={flightData.price}
+                  onChange={handleChange}
+                  required
+                  min="1"
+                  className={`w-full px-4 py-2 rounded-lg border ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                      : 'border-gray-300 focus:border-emerald-500'
+                  }`}
+                  placeholder="e.g., 5999"
+                />
+              </div>
+              
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Available Seats*
+                </label>
+                <input
+                  type="number"
+                  name="availableSeats"
+                  value={flightData.availableSeats}
+                  onChange={handleChange}
+                  required
+                  min="1"
+                  className={`w-full px-4 py-2 rounded-lg border ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500' 
+                      : 'border-gray-300 focus:border-emerald-500'
+                  }`}
+                  placeholder="e.g., 180"
+                />
+              </div>
+            </div>
           </div>
         </div>
         
-        <div className="mt-8 flex flex-wrap justify-end gap-4">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/flights')}
-            className="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-md hover:from-gray-200 hover:to-gray-300 transition-colors border border-gray-300"
-          >
-            Cancel
-          </button>
+        {/* Meal Options */}
+        <div className="mt-8">
+          <h2 className={`text-lg font-medium mb-4 ${isDark ? 'text-white' : 'text-gray-700'}`}>Meal Options</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {mealOptions.map(option => (
+              <div key={option} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={option}
+                  checked={flightData.mealOptions.includes(option)}
+                  onChange={() => handleMealOptionChange(option)}
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                />
+                <label htmlFor={option} className={`ml-2 block text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {option}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Submit Button */}
+        <div className="mt-8 flex justify-end">
           <button
             type="submit"
-            className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-md hover:from-emerald-600 hover:to-emerald-700 transition-colors"
-            disabled={submitting}
+            disabled={loading}
+            className={`flex items-center px-6 py-3 rounded-lg ${
+              isDark 
+                ? 'bg-emerald-600 hover:bg-emerald-700' 
+                : 'bg-emerald-600 hover:bg-emerald-700'
+            } text-white shadow-md hover:shadow-lg transition-all`}
           >
-            {submitting ? (
-              <>
-                <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <FaSave /> Save Flight
-              </>
-            )}
+            <FaSave className="mr-2" />
+            {loading ? 'Saving...' : isEditMode ? 'Update Flight' : 'Add Flight'}
           </button>
         </div>
       </form>

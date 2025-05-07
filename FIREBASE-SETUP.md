@@ -1,6 +1,6 @@
-# Firebase Setup Guide for AeroVoyage
+# Firebase Setup Guide for FlyScape
 
-This guide will help you fix authentication and permission issues with Firebase in your AeroVoyage application.
+This guide will help you fix authentication and permission issues with Firebase in your FlyScape application.
 
 ## Error Issues and Solutions
 

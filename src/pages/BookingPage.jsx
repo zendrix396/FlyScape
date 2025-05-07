@@ -4,6 +4,7 @@ import { doc, addDoc, collection, getDocs, query, where, orderBy, limit, Timesta
 import { db } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
 import { useBooking } from '../contexts/BookingContext';
+import { useTheme } from '../contexts/ThemeContext';
 import BookingForm from '../components/BookingForm';
 import Voucher from '../components/Voucher';
 import GradientText from '../components/GradientText';
@@ -23,6 +24,7 @@ export default function BookingPage() {
   const navigate = useNavigate();
   const { currentUser, userProfile } = useAuth();
   const { recordFlightSearch, shouldIncreasePriceBySearchHistory } = useBooking();
+  const { isDark } = useTheme();
   const [bookingSubmitted, setBookingSubmitted] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -264,13 +266,13 @@ export default function BookingPage() {
   // Check if user is authenticated
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-gray-800">Please log in</h1>
-          <p className="mt-2 text-gray-600">You need to be logged in to book flights</p>
+          <h1 className={`text-2xl font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Please log in</h1>
+          <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>You need to be logged in to book flights</p>
           <Link
             to="/login"
-            className="mt-4 inline-block px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+            className={`mt-4 inline-block px-4 py-2 ${isDark ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-emerald-600 hover:bg-emerald-700'} text-white rounded-md`}
           >
             Go to Login
           </Link>
@@ -355,7 +357,7 @@ export default function BookingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+      <div className={`min-h-screen flex justify-center items-center ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <LoadingSpinner size="medium" color="emerald" />
       </div>
     );
@@ -363,13 +365,13 @@ export default function BookingPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 max-w-lg w-full">
-          <p className="text-red-700">{error}</p>
+      <div className={`min-h-screen flex flex-col items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-gray-50'} px-4`}>
+        <div className={`${isDark ? 'bg-red-900/30 border-red-800' : 'bg-red-50 border-red-500'} border-l-4 p-4 mb-6 max-w-lg w-full`}>
+          <p className={isDark ? 'text-red-300' : 'text-red-700'}>{error}</p>
         </div>
         <button
           onClick={() => navigate('/flights')}
-          className="flex items-center text-emerald-600 hover:text-emerald-700"
+          className={`flex items-center ${isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-600 hover:text-emerald-700'}`}
         >
           <FaArrowLeft className="mr-2" />
           Back to flight search
@@ -381,26 +383,34 @@ export default function BookingPage() {
   if (bookings.length > 0) {
     const currentBooking = bookings[currentTicketIndex];
     return (
-      <div className="min-h-screen bg-gray-50 pt-8 pb-12">
+      <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'} pt-8 pb-12`}>
         <div className="max-w-4xl mx-auto px-4">
           {bookings.length > 1 && (
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-              <h2 className="text-xl font-semibold text-center mb-2">Passenger Tickets</h2>
+            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md p-4 mb-6`}>
+              <h2 className={`text-xl font-semibold text-center mb-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>Passenger Tickets</h2>
               <div className="flex justify-between items-center">
                 <button 
                   onClick={handlePrevTicket} 
                   disabled={currentTicketIndex === 0}
-                  className={`px-4 py-2 rounded-md ${currentTicketIndex === 0 ? 'bg-gray-200 text-gray-500' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}`}
+                  className={`px-4 py-2 rounded-md ${
+                    currentTicketIndex === 0 
+                      ? isDark ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-500' 
+                      : isDark ? 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-800/50' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                  }`}
                 >
                   Previous Ticket
                 </button>
-                <span className="text-gray-600">
+                <span className={isDark ? 'text-gray-300' : 'text-gray-600'}>
                   Ticket {currentTicketIndex + 1} of {bookings.length}
                 </span>
                 <button 
                   onClick={handleNextTicket} 
                   disabled={currentTicketIndex === bookings.length - 1}
-                  className={`px-4 py-2 rounded-md ${currentTicketIndex === bookings.length - 1 ? 'bg-gray-200 text-gray-500' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}`}
+                  className={`px-4 py-2 rounded-md ${
+                    currentTicketIndex === bookings.length - 1 
+                      ? isDark ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-500' 
+                      : isDark ? 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-800/50' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                  }`}
                 >
                   Next Ticket
                 </button>
@@ -411,7 +421,7 @@ export default function BookingPage() {
           <div className="mt-6 text-center">
             <button
               onClick={() => navigate('/flights')}
-              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 inline-flex items-center"
+              className={`px-4 py-2 ${isDark ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-emerald-600 hover:bg-emerald-700'} text-white rounded-md inline-flex items-center`}
             >
               <FaArrowLeft className="mr-2" />
               Back to Flights
@@ -423,12 +433,12 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 pb-12">
+    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'} pt-16 pb-12`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <button
             onClick={() => navigate('/flights')}
-            className="flex items-center text-emerald-600 hover:text-emerald-700 mb-4"
+            className={`flex items-center ${isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-600 hover:text-emerald-700'} mb-4`}
           >
             <FaArrowLeft className="mr-2" />
             Back to flight list
@@ -442,58 +452,58 @@ export default function BookingPage() {
             >
               Book Your Flight
             </GradientText>
-            <h2 className="mt-2 text-gray-600">
+            <h2 className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               {flight?.fromFormatted || flight?.from} to {flight?.toFormatted || flight?.to} • {flight?.displayDepartureDate || 'N/A'}
             </h2>
           </div>
 
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} shadow-md rounded-lg p-6 mb-6`}>
             <div className="flex flex-col md:flex-row justify-between mb-4">
               <div>
-                <h3 className="text-lg font-semibold">{flight?.airline}</h3>
-                <p className="text-gray-500">{flight?.flightNumber}</p>
+                <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>{flight?.airline}</h3>
+                <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>{flight?.flightNumber}</p>
               </div>
               <div className="text-right mt-4 md:mt-0">
                 {flight?.priceIncreased && (
-                  <p className="text-sm line-through text-gray-500">₹{flight?.originalPrice}</p>
+                  <p className={`text-sm line-through ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>₹{flight?.originalPrice}</p>
                 )}
-                <p className="text-2xl font-bold text-emerald-600">₹{flight?.price}</p>
-                <p className="text-sm text-gray-500">per passenger</p>
+                <p className={`text-2xl font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>₹{flight?.price}</p>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>per passenger</p>
                 {flight?.priceIncreased && (
                   <p className="text-xs text-red-500">Price increased due to high demand</p>
                 )}
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-4 border-t border-b border-gray-100">
+            <div className={`flex flex-col md:flex-row justify-between items-start md:items-center py-4 border-t border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
               <div className="mb-4 md:mb-0">
-                <p className="text-sm text-gray-500">Departure</p>
-                <p className="text-xl font-semibold">
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Departure</p>
+                <p className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>
                   {flight?.displayDepartureTime || formatTime(flight?.departureTime) || 'N/A'}
                 </p>
-                <p className="text-gray-600">{flight?.fromFormatted || flight?.from}</p>
+                <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>{flight?.fromFormatted || flight?.from}</p>
               </div>
 
               <div className="mb-4 md:mb-0 md:mx-4 text-center">
-                <p className="text-sm text-gray-500">Duration</p>
-                <p className="text-lg">{flight?.duration}</p>
-                <p className="text-xs text-gray-400">
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Duration</p>
+                <p className={`text-lg ${isDark ? 'text-white' : 'text-gray-800'}`}>{flight?.duration}</p>
+                <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                   {flight?.stops === 0 ? 'Non-stop' : `${flight?.stops} ${flight?.stops === 1 ? 'stop' : 'stops'}`}
                 </p>
               </div>
 
               <div className="text-right">
-                <p className="text-sm text-gray-500">Arrival</p>
-                <p className="text-xl font-semibold">
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Arrival</p>
+                <p className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>
                   {flight?.displayArrivalTime || formatTime(flight?.arrivalTime) || 'N/A'}
                 </p>
-                <p className="text-gray-600">{flight?.toFormatted || flight?.to}</p>
+                <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>{flight?.toFormatted || flight?.to}</p>
               </div>
             </div>
 
             <div className="mt-4">
-              <p className="text-sm text-gray-500 mb-1">Baggage Allowance</p>
-              <p className="font-medium">20kg Check-in + 7kg Cabin</p>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} mb-1`}>Baggage Allowance</p>
+              <p className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>20kg Check-in + 7kg Cabin</p>
             </div>
           </div>
         </div>
@@ -502,10 +512,10 @@ export default function BookingPage() {
           <BookingForm flight={flight} onSubmit={handleBookingSubmit} />
         ) : (
           <div className="text-center py-8">
-            <p className="text-gray-600">Flight data is not available. Please go back to search page.</p>
+            <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Flight data is not available. Please go back to search page.</p>
             <button
               onClick={() => navigate('/flights')}
-              className="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-md"
+              className={`mt-4 ${isDark ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-emerald-600 hover:bg-emerald-700'} text-white py-2 px-4 rounded-md`}
             >
               Back to Flights
             </button>

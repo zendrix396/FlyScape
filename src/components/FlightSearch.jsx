@@ -1,22 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPlane, FaCalendarAlt, FaSearch, FaExchangeAlt, FaUser, FaAngleDown, FaAngleUp, FaCalendarCheck } from 'react-icons/fa';
+import { FaPlane, FaCalendarAlt, FaSearch, FaExchangeAlt, FaUser, FaAngleDown, FaAngleUp, FaCalendarCheck, FaCheck } from 'react-icons/fa';
 import GradientText from './GradientText';
 import AnimatedList from './AnimatedList';
 import { motion, AnimatePresence } from 'framer-motion';
 import { searchAirports, formatAirportForDisplay } from '../services/airportService';
 import { extractAirportCode } from '../utils/airportUtil';
+import { useTheme } from '../contexts/ThemeContext';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import SpotlightCard from './SpotlightCard';
 
-export default function FlightSearch({ onSearch }) {
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [passengers, setPassengers] = useState(1);
-  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
-  const [showToSuggestions, setShowToSuggestions] = useState(false);
-  const [showPassengerDropdown, setShowPassengerDropdown] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchAllDates, setSearchAllDates] = useState(false);
+export default function FlightSearch({ onSearch, className = '', initialValues = {} }) {
+  const { isDark } = useTheme();
+  const [fromCity, setFromCity] = useState(initialValues.from || '');
+  const [toCity, setToCity] = useState(initialValues.to || '');
+  const [departureDate, setDepartureDate] = useState(
+    initialValues.date ? new Date(initialValues.date) : null
+  );
+  const [passengers, setPassengers] = useState(initialValues.passengers || 1);
+  const [showFromList, setShowFromList] = useState(false);
+  const [showToList, setShowToList] = useState(false);
+  const [airports, setAirports] = useState([]);
+  const [fromSearch, setFromSearch] = useState('');
+  const [toSearch, setToSearch] = useState('');
+  const [allDates, setAllDates] = useState(initialValues.allDates || false);
 
   const fromRef = useRef(null);
   const toRef = useRef(null);
@@ -44,116 +51,113 @@ export default function FlightSearch({ onSearch }) {
     'Sydney (SYD)'
   ];
 
-  const handleFromChange = async (e) => {
-    const value = e.target.value;
-    setFrom(value);
-    if (value.trim().length > 1) {
-      // Mock API call for suggestions
-      setIsLoading(true);
-      try {
-        // Try to use the searchAirports service, fallback to dummy suggestions
-        const airports = await searchAirports(value);
-        if (airports && airports.length > 0) {
-          setSuggestions(airports.map(formatAirportForDisplay));
-        } else {
-          const filtered = dummySuggestions.filter(
-            (s) => s.toLowerCase().includes(value.toLowerCase())
-          );
-          setSuggestions(filtered);
-        }
-      } catch (error) {
-        const filtered = dummySuggestions.filter(
-          (s) => s.toLowerCase().includes(value.toLowerCase())
-        );
-        setSuggestions(filtered);
-      } finally {
-        setIsLoading(false);
-        setShowFromSuggestions(true);
-        setShowToSuggestions(false);
-      }
-    } else {
-      setSuggestions([]);
-      setShowFromSuggestions(false);
-    }
+  // Fetch airports
+  useEffect(() => {
+    const loadAirports = async () => {
+      const airportList = await searchAirports('');
+      setAirports(airportList);
+    };
+    
+    loadAirports();
+  }, []);
+
+  // Filter airports based on search
+  const filteredAirports = (search) => {
+    if (!search || search.length < 2) return [];
+    
+    const searchLower = search.toLowerCase();
+    return airports.filter(airport => {
+      const airportCode = airport.code.toLowerCase();
+      const airportName = airport.name.toLowerCase();
+      const cityName = airport.city.toLowerCase();
+      
+      return airportCode.includes(searchLower) || 
+             airportName.includes(searchLower) || 
+             cityName.includes(searchLower);
+    }).slice(0, 5);
   };
 
-  const handleToChange = async (e) => {
-    const value = e.target.value;
-    setTo(value);
-    if (value.trim().length > 1) {
-      // Mock API call for suggestions
-      setIsLoading(true);
-      try {
-        // Try to use the searchAirports service, fallback to dummy suggestions
-        const airports = await searchAirports(value);
-        if (airports && airports.length > 0) {
-          setSuggestions(airports.map(formatAirportForDisplay));
-        } else {
-          const filtered = dummySuggestions.filter(
-            (s) => s.toLowerCase().includes(value.toLowerCase())
-          );
-          setSuggestions(filtered);
-        }
-      } catch (error) {
-        const filtered = dummySuggestions.filter(
-          (s) => s.toLowerCase().includes(value.toLowerCase())
-        );
-        setSuggestions(filtered);
-      } finally {
-        setIsLoading(false);
-        setShowToSuggestions(true);
-        setShowFromSuggestions(false);
-      }
-    } else {
-      setSuggestions([]);
-      setShowToSuggestions(false);
-    }
+  // Handle from city change
+  const handleFromCityChange = (e) => {
+    setFromSearch(e.target.value);
+    setShowFromList(true);
   };
 
-  const handleSuggestionSelect = (suggestion) => {
-    if (showFromSuggestions) {
-      setFrom(suggestion);
-      setShowFromSuggestions(false);
-      toRef.current.focus();
-    } else if (showToSuggestions) {
-      setTo(suggestion);
-      setShowToSuggestions(false);
-    }
+  // Handle to city change
+  const handleToCityChange = (e) => {
+    setToSearch(e.target.value);
+    setShowToList(true);
   };
 
-  const handleSearchSubmit = (e) => {
+  // Handle airport selection for from field
+  const handleFromSelect = (airport) => {
+    setFromCity(airport.code);
+    setFromSearch('');
+    setShowFromList(false);
+  };
+
+  // Handle airport selection for to field
+  const handleToSelect = (airport) => {
+    setToCity(airport.code);
+    setToSearch('');
+    setShowToList(false);
+  };
+
+  // Handle swap cities
+  const handleSwapCities = () => {
+    setFromCity(toCity);
+    setToCity(fromCity);
+  };
+
+  // Handle search
+  const handleSearch = (e) => {
     e.preventDefault();
     
-    // Use our consistent airport code extraction utility
-    const fromCode = extractAirportCode(from);
-    const toCode = extractAirportCode(to);
-    
-    // Only include date if not searching all dates
-    const searchDate = searchAllDates ? '' : date;
-    
-    console.log(`Search submitted with params - from: ${fromCode}, to: ${toCode}, date: ${searchDate || 'any date'}`);
+    if (!fromCity || !toCity) {
+      alert('Please select both departure and arrival cities');
+      return;
+    }
     
     onSearch({
-      from: fromCode,
-      to: toCode,
-      date: searchDate,
+      from: fromCity,
+      to: toCity,
+      date: allDates ? null : departureDate,
       passengers,
+      allDates
     });
   };
 
-  const handleSwapLocations = () => {
-    const temp = from;
-    setFrom(to);
-    setTo(temp);
+  // Format airport display
+  const getDisplayAirport = (code) => {
+    return formatAirportForDisplay(code);
   };
+
+  // Render airport item in dropdown
+  const renderAirportItem = (airport, index) => (
+    <motion.div
+      key={airport.code}
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, delay: index * 0.05 }}
+      className={`p-2 cursor-pointer ${
+        isDark ? 'hover:bg-gray-700' : 'hover:bg-emerald-50'
+      }`}
+      onClick={() => showFromList ? handleFromSelect(airport) : handleToSelect(airport)}
+    >
+      <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>
+        {airport.city} ({airport.code})
+      </div>
+      <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{airport.name}</div>
+    </motion.div>
+  );
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (fromRef.current && !fromRef.current.contains(event.target)) {
-        setShowFromSuggestions(false);
+        setShowFromList(false);
       }
       if (toRef.current && !toRef.current.contains(event.target)) {
-        setShowToSuggestions(false);
+        setShowToList(false);
       }
       if (passengerRef.current && !passengerRef.current.contains(event.target)) {
         setShowPassengerDropdown(false);
@@ -167,193 +171,172 @@ export default function FlightSearch({ onSearch }) {
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 md:p-8">
-      <div className="mb-4 sm:mb-6 text-center">
-        <GradientText
-          colors={["#10b981", "#6ee7b7", "#10b981"]}
-          animationSpeed={5}
-          className="text-2xl sm:text-3xl font-bold"
-        >
-          Search Flights
-        </GradientText>
-        <p className="text-gray-500 mt-1 sm:mt-2 text-sm sm:text-base">Find the best deals on flights</p>
+    <SpotlightCard
+      className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl p-4 sm:p-5 shadow-lg ${className}`}
+      spotlightColor="rgba(16, 185, 129, 0.1)"
+      spotlightSize={350}
+    >
+      <div className="mb-3 sm:mb-4">
+        <h2 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'} text-center`}>Search Flights</h2>
       </div>
-
-      <form onSubmit={handleSearchSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          <div className="relative" ref={fromRef}>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">From</label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaPlane className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-              </div>
+      
+      <form onSubmit={handleSearch}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="relative">
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+              From
+            </label>
+            <div className={`relative flex items-center w-full ${
+              isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+            } border rounded-md focus-within:ring-1 focus-within:ring-emerald-500 focus-within:border-emerald-500`}>
+              <span className={`pl-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                <FaPlane size={16} />
+              </span>
               <input
                 type="text"
-                className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-8 sm:pl-10 pr-8 sm:pr-12 py-2 sm:py-3 text-xs sm:text-sm border-gray-300 rounded-md"
-                placeholder="City or airport"
-                value={from}
-                onChange={handleFromChange}
-                onClick={() => showFromSuggestions && suggestions.length > 0 && setShowFromSuggestions(true)}
-                required
+                value={fromSearch || (fromCity ? getDisplayAirport(fromCity) : '')}
+                onChange={handleFromCityChange}
+                onFocus={() => setShowFromList(true)}
+                className={`w-full py-2 pl-2 pr-3 focus:outline-none ${
+                  isDark ? 'bg-gray-700 text-white placeholder-gray-400' : 'bg-white text-gray-800 placeholder-gray-400'
+                } rounded-md text-sm`}
+                placeholder="Enter city or airport"
               />
             </div>
-            {showFromSuggestions && suggestions.length > 0 && (
-              <div className="absolute z-10 mt-1 w-full">
-                <AnimatedList
-                  items={suggestions}
-                  onItemSelect={handleSuggestionSelect}
-                  className="w-full"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="relative flex" ref={toRef}>
-            <div className="flex-grow">
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">To</label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaPlane className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 transform rotate-90" />
-                </div>
-                <input
-                  type="text"
-                  className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-8 sm:pl-10 pr-8 sm:pr-12 py-2 sm:py-3 text-xs sm:text-sm border-gray-300 rounded-md"
-                  placeholder="City or airport"
-                  value={to}
-                  onChange={handleToChange}
-                  onClick={() => showToSuggestions && suggestions.length > 0 && setShowToSuggestions(true)}
-                  required
-                />
-              </div>
-              {showToSuggestions && suggestions.length > 0 && (
+            <AnimatePresence>
+              {showFromList && filteredAirports(fromSearch).length > 0 && (
                 <div className="absolute z-10 mt-1 w-full">
                   <AnimatedList
-                    items={suggestions}
-                    onItemSelect={handleSuggestionSelect}
-                    className="w-full"
+                    items={filteredAirports(fromSearch)}
+                    renderItem={renderAirportItem}
+                    className={`${isDark ? 'border border-gray-700' : 'border border-gray-200'} shadow-lg`}
                   />
                 </div>
               )}
-            </div>
-            <div className="flex items-end ml-2 mb-[2px]">
-              <button
-                type="button"
-                onClick={handleSwapLocations}
-                className="p-2 sm:p-3 bg-emerald-100 rounded-md text-emerald-600 hover:bg-emerald-200 transition-colors"
-              >
-                <FaExchangeAlt className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-            </div>
+            </AnimatePresence>
           </div>
-
-          <div>
-            <div className="flex justify-between items-center">
-              <label className="block text-xs sm:text-sm font-medium text-gray-700">Date</label>
-              <div className="flex items-center text-xs sm:text-sm text-emerald-600">
-                <input
-                  type="checkbox"
-                  id="allDates"
-                  checked={searchAllDates}
-                  onChange={() => setSearchAllDates(!searchAllDates)}
-                  className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 focus:ring-emerald-500 rounded-sm"
-                />
-                <label htmlFor="allDates" className="flex items-center cursor-pointer">
-                  <FaCalendarCheck className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> All dates
-                </label>
-              </div>
-            </div>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaCalendarAlt className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-              </div>
+          
+          <div className="relative">
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+              To
+            </label>
+            <div className={`relative flex items-center w-full ${
+              isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+            } border rounded-md focus-within:ring-1 focus-within:ring-emerald-500 focus-within:border-emerald-500`}>
+              <span className={`pl-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                <FaPlane size={16} style={{ transform: 'rotate(90deg)' }} />
+              </span>
               <input
-                type="date"
-                className={`focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-8 sm:pl-10 py-2 sm:py-3 text-xs sm:text-sm border-gray-300 rounded-md ${
-                  searchAllDates ? 'bg-gray-100 text-gray-500' : ''
-                }`}
-                placeholder="Select date"
-                value={date}
-                min={new Date().toISOString().split('T')[0]}
-                onChange={(e) => setDate(e.target.value)}
-                disabled={searchAllDates}
+                type="text"
+                value={toSearch || (toCity ? getDisplayAirport(toCity) : '')}
+                onChange={handleToCityChange}
+                onFocus={() => setShowToList(true)}
+                className={`w-full py-2 pl-2 pr-3 focus:outline-none ${
+                  isDark ? 'bg-gray-700 text-white placeholder-gray-400' : 'bg-white text-gray-800 placeholder-gray-400'
+                } rounded-md text-sm`}
+                placeholder="Enter city or airport"
               />
             </div>
+            <AnimatePresence>
+              {showToList && filteredAirports(toSearch).length > 0 && (
+                <div className="absolute z-10 mt-1 w-full">
+                  <AnimatedList
+                    items={filteredAirports(toSearch)}
+                    renderItem={renderAirportItem}
+                    className={`${isDark ? 'border border-gray-700' : 'border border-gray-200'} shadow-lg`}
+                  />
+                </div>
+              )}
+            </AnimatePresence>
           </div>
-
-          <div className="relative" ref={passengerRef}>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Passengers</label>
-            <div className="mt-1">
-              <button
-                type="button"
-                onClick={() => setShowPassengerDropdown(!showPassengerDropdown)}
-                className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-8 sm:pl-10 pr-3 py-2 sm:py-3 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 text-xs sm:text-sm"
+        </div>
+        
+        <div className="flex justify-center mb-4">
+          <button
+            type="button"
+            onClick={handleSwapCities}
+            className={`p-2 rounded-full ${
+              isDark ? 'bg-gray-700 text-emerald-400 hover:bg-gray-600' : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+            } transition-colors`}
+          >
+            <FaExchangeAlt />
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+              Date
+            </label>
+            <div className={`relative flex items-center w-full ${
+              isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+            } border rounded-md focus-within:ring-1 focus-within:ring-emerald-500 focus-within:border-emerald-500`}>
+              <span className={`pl-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                <FaCalendarAlt size={16} />
+              </span>
+              <DatePicker
+                selected={departureDate}
+                onChange={date => setDepartureDate(date)}
+                minDate={new Date()}
+                placeholderText="Select departure date"
+                className={`w-full py-2 pl-2 pr-3 ${
+                  isDark ? 'bg-gray-700 text-white placeholder-gray-400' : 'bg-white text-gray-800 placeholder-gray-400'
+                } focus:outline-none rounded-md text-sm`}
+                disabled={allDates}
+                calendarClassName={isDark ? 'dark-calendar' : ''}
+              />
+            </div>
+            <div className="mt-2 flex items-center">
+              <input
+                id="allDates"
+                type="checkbox"
+                checked={allDates}
+                onChange={() => setAllDates(!allDates)}
+                className={`rounded ${isDark ? 'bg-gray-700 border-gray-600' : ''} text-emerald-500 mr-2`}
+              />
+              <label htmlFor="allDates" className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                Show flights for all dates
+              </label>
+            </div>
+          </div>
+          
+          <div>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+              Passengers
+            </label>
+            <div className={`relative flex items-center w-full ${
+              isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+            } border rounded-md focus-within:ring-1 focus-within:ring-emerald-500 focus-within:border-emerald-500`}>
+              <span className={`pl-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                <FaUser size={16} />
+              </span>
+              <select
+                value={passengers}
+                onChange={(e) => setPassengers(parseInt(e.target.value))}
+                className={`w-full py-2 pl-2 pr-3 ${
+                  isDark ? 'bg-gray-700 text-white' : 'bg-white text-gray-800'
+                } focus:outline-none rounded-md text-sm appearance-none`}
               >
-                <span className="block truncate">{passengers} Passenger{passengers > 1 ? 's' : ''}</span>
-                <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  {showPassengerDropdown ? (
-                    <FaAngleUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
-                  ) : (
-                    <FaAngleDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
-                  )}
-                </span>
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <FaUser className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                </span>
-              </button>
-
-              <AnimatePresence>
-                {showPassengerDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1"
-                  >
-                    <div className="px-3 py-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs sm:text-sm text-gray-700">Select passengers</span>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => passengers > 1 && setPassengers(passengers - 1)}
-                            className={`p-1 rounded-md ${
-                              passengers > 1 ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'
-                            }`}
-                            disabled={passengers <= 1}
-                          >
-                            <span className="text-sm sm:text-base">-</span>
-                          </button>
-                          <span className="text-xs sm:text-sm font-medium text-gray-700">{passengers}</span>
-                          <button
-                            type="button"
-                            onClick={() => passengers < 9 && setPassengers(passengers + 1)}
-                            className={`p-1 rounded-md ${
-                              passengers < 9 ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'
-                            }`}
-                            disabled={passengers >= 9}
-                          >
-                            <span className="text-sm sm:text-base">+</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                {[1, 2, 3, 4, 5, 6].map(num => (
+                  <option key={num} value={num}>{num} Passenger{num !== 1 ? 's' : ''}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
-
-        <div className="md:col-span-2">
+        
+        <div className="flex justify-center">
           <button
             type="submit"
-            className="w-full mt-4 flex justify-center py-2 sm:py-3 px-4 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+            className={`w-full sm:w-auto py-2 px-4 sm:px-6 flex items-center justify-center ${
+              isDark ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-emerald-600 hover:bg-emerald-700'
+            } text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500`}
           >
-            <FaSearch className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-            Search Flights
+            <FaSearch className="mr-2" />
+            <span>Search Flights</span>
           </button>
         </div>
       </form>
-    </div>
+    </SpotlightCard>
   );
 } 
