@@ -5,12 +5,12 @@ import { connectAuthEmulator, browserSessionPersistence, setPersistence } from '
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyC__wWXRbG9lI_E_c_Pukf_o9KifWTsecI",
-  authDomain: "travel-project-c74a9.firebaseapp.com",
-  projectId: "travel-project-c74a9",
-  storageBucket: "travel-project-c74a9.firebasestorage.app",
-  messagingSenderId: "659741116617",
-  appId: "1:659741116617:web:102711f0214d2e2cbee518"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
