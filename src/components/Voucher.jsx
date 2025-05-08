@@ -7,6 +7,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { sendTicketByEmail, generateTicketPDF } from '../services/emailService';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Voucher({ booking }) {
   const voucherRef = useRef(null);
@@ -14,6 +15,7 @@ export default function Voucher({ booking }) {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   
   const { flight, passengerName, bookingId, bookingDate, email, passengerNumber, totalPassengers } = booking;
   
@@ -125,249 +127,62 @@ export default function Voucher({ booking }) {
   };
   
   const handleDownload = async () => {
-    if (!voucherRef.current) return;
-    
+    setIsDownloading(true);
     try {
-      setIsDownloading(true);
+      // Create a new PDF document
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
       
-      // Due to persistent issues with complex CSS, we'll use direct jsPDF text-based PDF generation
-      // Create a simple PDF with basic text and some styling
-      const pdf = new jsPDF();
-      const margin = 15;
-      let y = margin;
-      const pageWidth = pdf.internal.pageSize.width;
-      const pageHeight = pdf.internal.pageSize.height;
+      // Add colored header
+      doc.setFillColor(16, 185, 129); // emerald-600
+      doc.rect(0, 0, 210, 25, 'F');
       
-      // Add a colored header
-      pdf.setFillColor(16, 185, 129); // #10b981 emerald-600
-      pdf.rect(0, 0, pageWidth, 40, 'F');
+      // Add company name and logo
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.text('Flyscape - Boarding Pass', 105, 15, { align: 'center' });
       
-      // Add company logo/name on the colored header
-      pdf.setFontSize(24);
-      pdf.setTextColor(255, 255, 255); // White
-      pdf.text('FlyScape', margin, 25);
+      // Add booking reference
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(12);
+      doc.text(`Booking Reference: ${String(bookingId || 'N/A')}`, 105, 35, { align: 'center' });
       
-      // Add a simple plane icon next to the company name
-      // Draw a simple plane shape with lines
-      pdf.setLineWidth(0.5);
-      pdf.setDrawColor(255, 255, 255);
-      const planeX = margin + 120;
-      const planeY = 25;
+      // Add passenger information
+      doc.setFontSize(14);
+      doc.text('Passenger Information', 20, 50);
+      doc.setFontSize(12);
+      doc.text(`Name: ${String(passengerName || 'N/A')}`, 20, 60);
       
-      // Plane body
-      pdf.line(planeX, planeY, planeX + 15, planeY);
-      // Nose
-      pdf.line(planeX + 15, planeY, planeX + 20, planeY - 2);
-      pdf.line(planeX + 20, planeY - 2, planeX + 15, planeY - 4);
-      // Tail
-      pdf.line(planeX, planeY, planeX - 5, planeY - 5);
-      pdf.line(planeX - 5, planeY - 5, planeX, planeY - 3);
-      // Wings
-      pdf.line(planeX + 5, planeY, planeX + 3, planeY + 5);
-      pdf.line(planeX + 3, planeY + 5, planeX + 10, planeY);
-      pdf.line(planeX + 5, planeY, planeX + 3, planeY - 5);
-      pdf.line(planeX + 3, planeY - 5, planeX + 10, planeY);
+      // Add flight details
+      doc.setFontSize(14);
+      doc.text('Flight Details', 20, 75);
+      doc.setFontSize(12);
+      doc.text(`Airline: ${String(flight?.airline || 'N/A')}`, 20, 85);
+      doc.text(`Flight Number: ${String(flight?.flightNumber || 'N/A')}`, 20, 95);
+      doc.text(`From: ${String(flight?.from || 'N/A')}`, 20, 105);
+      doc.text(`To: ${String(flight?.to || 'N/A')}`, 20, 115);
+      doc.text(`Departure: ${formatDate(flight?.departureTime)} ${formatTime(flight?.departureTime)}`, 20, 125);
+      doc.text(`Arrival: ${formatDate(flight?.arrivalTime)} ${formatTime(flight?.arrivalTime)}`, 20, 135);
       
-      // Start content below the colored header
-      y = 50;
+      // Add barcode placeholder
+      doc.setFontSize(14);
+      doc.text('Scan at airport', 105, 160, { align: 'center' });
+      doc.text(`${String(bookingId || 'N/A')}`, 105, 170, { align: 'center' });
       
-      // Add title
-      pdf.setFontSize(18);
-      pdf.setTextColor(17, 24, 39); // #111827 gray-900
-      pdf.text('Boarding Pass', margin, y);
-      y += 10;
-      
-      // Add booking reference in a box
-      pdf.setFillColor(243, 244, 246); // #f3f4f6 gray-100
-      pdf.roundedRect(pageWidth - margin - 80, y - 10, 80, 15, 3, 3, 'F');
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128); // #6b7280 gray-500
-      pdf.text('BOOKING REFERENCE', pageWidth - margin - 75, y - 4);
-      pdf.setFontSize(12);
-      pdf.setTextColor(17, 24, 39);
-      pdf.text(bookingId, pageWidth - margin - 75, y + 2);
-      
-      y += 15;
-      
-      // Add horizontal line
-      pdf.setDrawColor(229, 231, 235); // #e5e7eb gray-200
-      pdf.setLineWidth(0.5);
-      pdf.line(margin, y, pageWidth - margin, y);
-      y += 15;
-      
-      // Passenger info section
-      pdf.setFillColor(16, 185, 129, 0.1); // Light emerald background
-      pdf.roundedRect(margin, y - 5, pageWidth - (margin * 2), 20, 3, 3, 'F');
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128); // Gray-500
-      pdf.text('PASSENGER', margin + 5, y);
-      
-      pdf.setFontSize(14);
-      pdf.setTextColor(17, 24, 39);
-      pdf.text(passengerName, margin + 5, y + 10);
-      
-      y += 30;
-      
-      // Flight details section header
-      pdf.setFontSize(14);
-      pdf.setTextColor(16, 185, 129); // Emerald-600
-      pdf.text('Flight Details', margin, y);
-      y += 10;
-      
-      // Flight details
-      pdf.setFontSize(12);
-      pdf.setTextColor(17, 24, 39); // Gray-900
-      pdf.text(`Flight: ${flight.airline} ${flight.flightNumber}`, margin, y);
-      y += 15;
-      
-      // Create a table-like structure for departure and arrival
-      const col1Width = (pageWidth - margin * 2) / 2 - 10;
-      
-      // Draw boxes for departure and arrival
-      pdf.setFillColor(243, 244, 246); // #f3f4f6 gray-100
-      pdf.roundedRect(margin, y - 5, col1Width, 40, 3, 3, 'F');
-      pdf.roundedRect(margin + col1Width + 20, y - 5, col1Width, 40, 3, 3, 'F');
-      
-      // Add a plane icon between departure and arrival
-      pdf.setDrawColor(16, 185, 129);
-      pdf.setLineWidth(1);
-      const midX = margin + col1Width + 10;
-      const midY = y + 15;
-      
-      // Draw plane
-      pdf.line(midX - 5, midY, midX + 5, midY);
-      pdf.line(midX + 5, midY, midX + 8, midY - 2);
-      pdf.line(midX - 5, midY, midX - 8, midY - 2);
-      
-      // Departure
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128); // Gray-500
-      pdf.text('DEPARTURE', margin + 5, y);
-      
-      // Arrival
-      pdf.text('ARRIVAL', margin + col1Width + 25, y);
-      y += 5;
-      
-      // Departure time and location
-      pdf.setFontSize(16);
-      pdf.setTextColor(17, 24, 39); // Gray-900
-      pdf.text(formatTime(flight.departureTime), margin + 5, y + 5);
-      pdf.text(formatTime(flight.arrivalTime), margin + col1Width + 25, y + 5);
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128); // Gray-500
-      pdf.text(formatDate(flight.departureTime), margin + 5, y + 12);
-      pdf.text(formatDate(flight.arrivalTime), margin + col1Width + 25, y + 12);
-      
-      pdf.setFontSize(12);
-      pdf.setTextColor(17, 24, 39); // Gray-900
-      pdf.text(flight.from, margin + 5, y + 22);
-      pdf.text(flight.to, margin + col1Width + 25, y + 22);
-      
-      y += 45;
-      
-      // Add details row
-      const detailWidth = (pageWidth - (margin * 2) - 20) / 3;
-      
-      // Flight duration box
-      pdf.setFillColor(243, 244, 246); // #f3f4f6 gray-100
-      pdf.roundedRect(margin, y - 5, detailWidth, 30, 3, 3, 'F');
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128); // Gray-500
-      pdf.text('DURATION', margin + 5, y);
-      
-      pdf.setFontSize(12);
-      pdf.setTextColor(17, 24, 39); // Gray-900
-      const duration = typeof flight.duration === 'string' 
-        ? flight.duration 
-        : `${Math.floor(flight.duration / 60)}h ${flight.duration % 60}m`;
-      pdf.text(duration, margin + 5, y + 10);
-      
-      // Class box
-      pdf.setFillColor(243, 244, 246); // #f3f4f6 gray-100
-      pdf.roundedRect(margin + detailWidth + 10, y - 5, detailWidth, 30, 3, 3, 'F');
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128); // Gray-500
-      pdf.text('CLASS', margin + detailWidth + 15, y);
-      
-      pdf.setFontSize(12);
-      pdf.setTextColor(17, 24, 39); // Gray-900
-      pdf.text('Economy', margin + detailWidth + 15, y + 10);
-      
-      // Gate box
-      pdf.setFillColor(243, 244, 246); // #f3f4f6 gray-100
-      pdf.roundedRect(margin + (detailWidth * 2) + 20, y - 5, detailWidth, 30, 3, 3, 'F');
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128); // Gray-500
-      pdf.text('GATE', margin + (detailWidth * 2) + 25, y);
-      
-      pdf.setFontSize(12);
-      pdf.setTextColor(17, 24, 39); // Gray-900
-      pdf.text('--', margin + (detailWidth * 2) + 25, y + 10);
-      
-      y += 40;
-      
-      // Barcode
-      pdf.setFillColor(243, 244, 246); // #f3f4f6 gray-100
-      pdf.rect(margin, y - 5, pageWidth - (margin * 2), 50, 'F');
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128); // Gray-500
-      pdf.text('BOOKING ID', margin + 5, y + 5);
-      
-      // Add fake barcode (just for visual representation)
-      pdf.setDrawColor(0, 0, 0);
-      pdf.setLineWidth(0.5);
-      const barcodeY = y + 10;
-      const barcodeHeight = 25;
-      const barcodeWidth = 120;
-      const barcodeX = (pageWidth / 2) - (barcodeWidth / 2);
-      
-      // Draw series of vertical lines to simulate barcode
-      for (let i = 0; i < barcodeWidth; i += 2) {
-        if (Math.random() > 0.4) { // Random pattern for barcode
-          const lineHeight = Math.random() * (barcodeHeight - 5) + 5;
-          pdf.line(
-            barcodeX + i, 
-            barcodeY, 
-            barcodeX + i, 
-            barcodeY + lineHeight
-          );
-        }
-      }
-      
-      // Add booking ID under barcode
-      pdf.setFontSize(12);
-      pdf.setTextColor(17, 24, 39);
-      const bookingIdText = bookingId || 'FLYTKT12345';
-      const bookingIdWidth = pdf.getStringUnitWidth(bookingIdText) * 12 / pdf.internal.scaleFactor;
-      pdf.text(bookingIdText, (pageWidth / 2) - (bookingIdWidth / 2), barcodeY + barcodeHeight + 10);
-      
-      // Add bottom footer with instructions
-      y = pageHeight - 30;
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128);
-      pdf.text('Please arrive at the airport at least 2 hours before the scheduled departure time.', margin, y);
-      pdf.text('Present this boarding pass along with your ID at the check-in counter.', margin, y + 5);
-      pdf.text('This is a digital boarding pass and is valid for travel.', margin, y + 10);
-      
-      // Add company footer
-      pdf.setDrawColor(229, 231, 235); // #e5e7eb gray-200
-      pdf.setLineWidth(0.5);
-      pdf.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128);
-      pdf.text('FlyScape - Your journey, our priority', margin, pageHeight - 8);
-      pdf.text('www.flyscape.com', pageWidth - margin - 40, pageHeight - 8);
+      // Add footer
+      doc.setFontSize(10);
+      doc.text('Please arrive at the airport at least 2 hours before departure.', 105, 240, { align: 'center' });
+      doc.text('Present this boarding pass at check-in counter.', 105, 245, { align: 'center' });
       
       // Save the PDF
-      pdf.save(`FlyScape_Boarding_Pass_${bookingId || 'Ticket'}.pdf`);
-      
-      setIsDownloading(false);
+      doc.save(`flyscape-ticket-${bookingId}.pdf`);
     } catch (error) {
-      console.error('Error downloading ticket:', error);
+      console.error('Error generating PDF:', error);
+      alert('Failed to download PDF. Please try again.');
+    } finally {
       setIsDownloading(false);
     }
   };
@@ -455,23 +270,35 @@ export default function Voucher({ booking }) {
         >
           Booking Confirmed!
         </GradientText>
-        <p className="text-gray-500 mt-2">
+        <p className={`mt-2 ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
           Your flight has been booked successfully. Here's your ticket voucher.
         </p>
       </div>
 
-      <SpotlightCard className="bg-white rounded-xl shadow-lg border border-emerald-100 p-6" spotlightColor="rgba(16, 185, 129, 0.1)" spotlightSize={250}>
+      <SpotlightCard 
+        className={`${
+          isDark 
+            ? 'bg-gray-800 border-gray-700 text-gray-100' 
+            : 'bg-white border-emerald-100 text-gray-900'
+        } rounded-xl shadow-lg border p-6`} 
+        spotlightColor={isDark ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.1)"} 
+        spotlightSize={250}
+      >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-1">
+            <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'} mb-1`}>
               Flight Voucher
             </h2>
-            <p className="text-gray-500">
+            <p className={`${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
               Booking Reference: <span className="font-mono font-semibold">{bookingId}</span>
             </p>
           </div>
           {passengerNumber && totalPassengers && totalPassengers > 1 && (
-            <div className="mt-3 md:mt-0 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium">
+            <div className={`mt-3 md:mt-0 px-3 py-1 ${
+              isDark 
+                ? 'bg-emerald-900/40 text-emerald-200' 
+                : 'bg-emerald-100 text-emerald-800'
+            } rounded-full text-sm font-medium`}>
               Passenger {passengerNumber} of {totalPassengers}
             </div>
           )}
@@ -498,70 +325,70 @@ export default function Voucher({ booking }) {
           </div>
 
           {/* Flight Details */}
-          <div className="p-6">
+          <div className={`p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <div className="text-sm text-gray-500">Passenger</div>
-                <div className="text-lg font-semibold flex items-center">
+                <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Passenger</div>
+                <div className={`text-lg font-semibold flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <FaUser className="h-4 w-4 mr-2 text-emerald-500" />
                   {passengerName}
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Flight</div>
-                <div className="text-lg font-semibold">{flight.airline} {flight.flightNumber}</div>
+                <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Flight</div>
+                <div className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{flight.airline} {flight.flightNumber}</div>
               </div>
             </div>
 
-            <div className="my-6 border-t border-b border-gray-200 py-6">
+            <div className={`my-6 border-t border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} py-6`}>
               <div className="flex flex-col md:flex-row justify-between items-center">
                 <div className="text-center mb-4 md:mb-0">
-                  <div className="text-3xl font-bold">{formatTime(flight.departureTime)}</div>
-                  <div className="text-sm text-gray-500">{formatDate(flight.departureTime)}</div>
-                  <div className="text-xl font-semibold mt-2">{flight.from}</div>
+                  <div className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatTime(flight.departureTime)}</div>
+                  <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{formatDate(flight.departureTime)}</div>
+                  <div className={`text-xl font-semibold mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{flight.from}</div>
                 </div>
 
                 <div className="flex items-center justify-center w-full md:w-auto mb-4 md:mb-0">
-                  <div className="w-24 h-[2px] bg-gray-300 hidden md:block"></div>
+                  <div className={`w-24 h-[2px] ${isDark ? 'bg-gray-600' : 'bg-gray-300'} hidden md:block`}></div>
                   <div className="mx-4">
                     <FaPlane className="h-8 w-8 text-emerald-500 transform rotate-90" />
                   </div>
-                  <div className="w-24 h-[2px] bg-gray-300 hidden md:block"></div>
+                  <div className={`w-24 h-[2px] ${isDark ? 'bg-gray-600' : 'bg-gray-300'} hidden md:block`}></div>
                 </div>
 
                 <div className="text-center">
-                  <div className="text-3xl font-bold">{formatTime(flight.arrivalTime)}</div>
-                  <div className="text-sm text-gray-500">{formatDate(flight.arrivalTime)}</div>
-                  <div className="text-xl font-semibold mt-2">{flight.to}</div>
+                  <div className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatTime(flight.arrivalTime)}</div>
+                  <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{formatDate(flight.arrivalTime)}</div>
+                  <div className={`text-xl font-semibold mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{flight.to}</div>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <div className="text-sm text-gray-500">Booking Date</div>
-                <div className="font-semibold">{formatDate(bookingDate)}</div>
+                <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Booking Date</div>
+                <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatDate(bookingDate)}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Class</div>
-                <div className="font-semibold">Economy</div>
+                <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Class</div>
+                <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Economy</div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Gate</div>
-                <div className="font-semibold">--</div>
+                <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Gate</div>
+                <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>--</div>
               </div>
             </div>
           </div>
 
           {/* Barcode */}
-          <div className="bg-gray-100 p-6 text-center">
-            <FaBarcode className="h-16 w-full" />
-            <div className="mt-2 font-mono text-sm">{bookingId}</div>
+          <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-100'} p-6 text-center`}>
+            <FaBarcode className={`h-16 w-full ${isDark ? 'text-gray-300' : 'text-gray-800'}`} />
+            <div className={`mt-2 font-mono text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{bookingId}</div>
           </div>
         </motion.div>
 
         {/* Actions */}
-        <div className="bg-gray-50 p-4 flex flex-wrap justify-center gap-3">
+        <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} p-4 flex flex-wrap justify-center gap-3`}>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -611,7 +438,9 @@ export default function Voucher({ booking }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleShare}
-            className="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors"
+            className={`flex items-center justify-center px-4 py-2 ${
+              isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-700 hover:bg-gray-800'
+            } text-white rounded-md transition-colors`}
           >
             <FaShareAlt className="mr-2" />
             Share
@@ -621,7 +450,9 @@ export default function Voucher({ booking }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleBookAgain}
-            className="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors"
+            className={`flex items-center justify-center px-4 py-2 ${
+              isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-700 hover:bg-gray-800'
+            } text-white rounded-md transition-colors`}
           >
             <FaPlane className="mr-2" />
             Book Again
@@ -629,7 +460,7 @@ export default function Voucher({ booking }) {
         </div>
       </SpotlightCard>
 
-      <div className="mt-6 text-center text-sm text-gray-500">
+      <div className={`mt-6 text-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
         {emailSent ? (
           <p>A copy of this voucher has been sent to your email {email}.</p>
         ) : (

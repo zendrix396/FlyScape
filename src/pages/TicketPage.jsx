@@ -4,6 +4,8 @@ import { collection, getDocs, query, where, getDoc, doc } from 'firebase/firesto
 import { db } from '../firebase/config';
 import Voucher from '../components/Voucher';
 import { FaArrowLeft, FaArrowRight, FaHome } from 'react-icons/fa';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function TicketPage() {
   const { ticketId } = useParams();
@@ -13,6 +15,7 @@ export default function TicketPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     // First try to load from localStorage (where the app stores bookings)
@@ -199,30 +202,24 @@ export default function TicketPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading ticket...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="large" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-xl shadow-md max-w-lg w-full text-center">
-          <div className="text-red-500 text-6xl mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="mx-auto h-16 w-16">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Ticket Not Found</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Link to="/" className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors">
-            <FaHome className="mr-2" />
-            Return to Home
-          </Link>
+      <div className={`min-h-screen flex flex-col items-center justify-center p-4 ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+        <div className={`max-w-md w-full p-8 rounded-xl shadow-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+          <h1 className="text-2xl font-bold text-red-500 mb-4">Error</h1>
+          <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-6`}>{error}</p>
+          <button
+            onClick={() => navigate('/')}
+            className="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+          >
+            Go Home
+          </button>
         </div>
       </div>
     );
@@ -230,31 +227,23 @@ export default function TicketPage() {
 
   if (!booking) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-xl shadow-md max-w-lg w-full text-center">
-          <div className="text-amber-500 text-6xl mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="mx-auto h-16 w-16">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Booking Not Found</h1>
-          <p className="text-gray-600 mb-6">The requested ticket could not be found. Please check your booking ID.</p>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 justify-center">
-            <Link to="/" className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors">
-              <FaHome className="mr-2" />
-              Return to Home
-            </Link>
-            <Link to="/bookings" className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
-              View My Bookings
-            </Link>
-          </div>
+      <div className={`min-h-screen flex flex-col items-center justify-center p-4 ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+        <div className={`max-w-md w-full p-8 rounded-xl shadow-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+          <h1 className="text-2xl font-bold text-emerald-600 mb-4">Booking Not Found</h1>
+          <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-6`}>The requested booking information could not be found.</p>
+          <button
+            onClick={() => navigate('/')}
+            className="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+          >
+            Go Home
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className={`min-h-screen py-12 px-4 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <Link to="/" className="flex items-center text-emerald-600 hover:text-emerald-700 transition-colors">
@@ -267,23 +256,33 @@ export default function TicketPage() {
         </div>
         
         {relatedBookings.length > 1 && (
-          <div className="flex justify-center mb-4 items-center">
+          <div className="max-w-2xl mx-auto mb-6 flex justify-between items-center">
             <button
-              onClick={handlePreviousTicket}
+              onClick={() => handlePreviousTicket()}
               disabled={currentIndex <= 0}
-              className={`p-2 rounded-full ${currentIndex <= 0 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:bg-emerald-100'}`}
+              className={`flex items-center ${
+                currentIndex <= 0 
+                  ? `opacity-50 cursor-not-allowed ${isDark ? 'text-gray-500' : 'text-gray-400'}` 
+                  : `${isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-600 hover:text-emerald-700'}`
+              } transition-colors`}
             >
-              <FaArrowLeft className="h-5 w-5" />
+              <FaArrowLeft className="mr-2" />
+              Previous Booking
             </button>
-            <span className="mx-4 text-gray-600 font-medium">
+            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Passenger {currentIndex + 1} of {relatedBookings.length}
-            </span>
+            </div>
             <button
-              onClick={handleNextTicket}
+              onClick={() => handleNextTicket()}
               disabled={currentIndex >= relatedBookings.length - 1}
-              className={`p-2 rounded-full ${currentIndex >= relatedBookings.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:bg-emerald-100'}`}
+              className={`flex items-center ${
+                currentIndex >= relatedBookings.length - 1 
+                  ? `opacity-50 cursor-not-allowed ${isDark ? 'text-gray-500' : 'text-gray-400'}` 
+                  : `${isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-600 hover:text-emerald-700'}`
+              } transition-colors`}
             >
-              <FaArrowRight className="h-5 w-5" />
+              Next Booking
+              <FaArrowRight className="ml-2" />
             </button>
           </div>
         )}
