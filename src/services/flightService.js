@@ -2,9 +2,18 @@ import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firesto
 import { db } from '../firebase/config';
 import { flightApi } from './apiService';
 import { extractAirportCode } from '../utils/airportUtil';
+import amadeusService from './amadeusApiService';
 
 // In-memory cache to avoid redundant API calls for the same search parameters
 const flightCache = {};
+
+// Use Amadeus API flag - set to true to use Amadeus, false to use existing API
+let useAmadeusApi = true;
+
+// Set which API to use
+const setUseAmadeusApi = (value) => {
+  useAmadeusApi = !!value;
+};
 
 // Get flights based on search parameters using the backend API
 const searchFlights = async (from, to, date = '', page = 1) => {
@@ -17,12 +26,9 @@ const searchFlights = async (from, to, date = '', page = 1) => {
     const toCode = extractAirportCode(to);
     
     // Create a cache key from the search parameters
-    const cacheKey = `${fromCode}-${toCode}-${formattedDate || 'any-date'}-${page}`;
+    const cacheKey = `${fromCode}-${toCode}-${formattedDate || 'any-date'}-${page}-${useAmadeusApi ? 'amadeus' : 'firebase'}`;
     
-    console.log(`Searching for flights with params: from=${fromCode}, to=${toCode}, date=${formattedDate || 'any date'}, page=${page}`);
-    
-    // Clear cache if needed for testing
-    // flightCache = {};
+    console.log(`Searching for flights with params: from=${fromCode}, to=${toCode}, date=${formattedDate || 'any date'}, page=${page}, using Amadeus: ${useAmadeusApi}`);
     
     // Check if results are already in cache
     if (flightCache[cacheKey]) {
@@ -30,22 +36,36 @@ const searchFlights = async (from, to, date = '', page = 1) => {
       return flightCache[cacheKey];
     }
     
-    // Call the backend API to search for flights
-    console.log("Cache miss, calling API...");
-    const response = await flightApi.searchFlights(fromCode, toCode, formattedDate, page);
+    let results = [];
     
-    // Log the response for debugging
-    console.log(`API response:`, response);
+    // Choose API to use based on flag
+    if (useAmadeusApi) {
+      // Use Amadeus API for flight search
+      try {
+        results = await amadeusService.searchFlights(fromCode, toCode, formattedDate);
+        console.log(`Found ${results.length} flights from Amadeus API`);
+      } catch (amadeusError) {
+        console.error("Error with Amadeus API, falling back to Firebase:", amadeusError);
+        // If Amadeus API fails, fall back to Firebase API
+        const response = await flightApi.searchFlights(fromCode, toCode, formattedDate, page);
+        results = response.flights || [];
+      }
+    } else {
+      // Use existing Firebase API
+      console.log("Using Firebase API for flight search");
+      const response = await flightApi.searchFlights(fromCode, toCode, formattedDate, page);
+      results = response.flights || [];
+    }
     
     // Cache the results
-    if (response.flights) {
-      console.log(`Caching ${response.flights.length} flights for key ${cacheKey}`);
-      flightCache[cacheKey] = response.flights;
+    if (results.length > 0) {
+      console.log(`Caching ${results.length} flights for key ${cacheKey}`);
+      flightCache[cacheKey] = results;
     } else {
       console.log("No flights found in response");
     }
     
-    return response.flights || [];
+    return results;
   } catch (error) {
     console.error("Error searching flights:", error);
     // Return an empty array on error
@@ -80,6 +100,27 @@ const recordFlightBooking = async (flightId, bookingType = 'firestoreBooking') =
     await flightApi.recordActivity(flightId, bookingType);
   } catch (error) {
     console.error("Error recording flight booking:", error);
+  }
+};
+
+// Save selected flight to Firestore
+const saveSelectedFlight = async (flight) => {
+  try {
+    // If this is an Amadeus flight, save it
+    if (useAmadeusApi && flight) {
+      return await amadeusService.saveSelectedFlight(flight);
+    }
+    
+    // For non-Amadeus flights, record as activity
+    if (flight && flight.id) {
+      await recordFlightBooking(flight.id, 'selection');
+      return { success: true };
+    }
+    
+    return { success: false, error: 'Invalid flight data' };
+  } catch (error) {
+    console.error("Error saving selected flight:", error);
+    return { success: false, error: error.message };
   }
 };
 
@@ -131,6 +172,9 @@ export {
   getFlightById,
   recordFlightSearch,
   recordFlightBooking,
+  saveSelectedFlight,
   getFlightPriceTrends,
-  adjustFlightPrice
+  adjustFlightPrice,
+  setUseAmadeusApi,
+  useAmadeusApi
 }; 

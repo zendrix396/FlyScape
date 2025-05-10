@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPlane, FaCalendarAlt, FaSearch, FaExchangeAlt, FaUser, FaAngleDown, FaAngleUp, FaCalendarCheck } from 'react-icons/fa';
+import { FaPlane, FaCalendarAlt, FaSearch, FaExchangeAlt, FaUser, FaAngleDown, FaAngleUp, FaCalendarCheck, FaGlobe } from 'react-icons/fa';
 import GradientText from './GradientText';
 import AnimatedList from './AnimatedList';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +8,7 @@ import { extractAirportCode } from '../utils/airportUtil';
 import { useTheme } from '../contexts/ThemeContext';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { setUseAmadeusApi } from '../services/flightService';
 
 export default function FlightSearch({ onSearch, className = '', initialValues = {} }) {
   const { isDark } = useTheme();
@@ -23,10 +24,16 @@ export default function FlightSearch({ onSearch, className = '', initialValues =
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchAllDates, setSearchAllDates] = useState(initialValues.allDates || false);
+  const [useAmadeusAPI, setUseAmadeusAPI] = useState(true);
 
   const fromRef = useRef(null);
   const toRef = useRef(null);
   const passengerRef = useRef(null);
+
+  // Effect to update API choice when toggle changes
+  useEffect(() => {
+    setUseAmadeusApi(useAmadeusAPI);
+  }, [useAmadeusAPI]);
 
   // Use expanded airport list from service
   const dummySuggestions = [
@@ -212,6 +219,11 @@ export default function FlightSearch({ onSearch, className = '', initialValues =
     loadInitialSuggestions();
   }, []);
 
+  // Toggle Amadeus API usage
+  const handleAPIToggle = () => {
+    setUseAmadeusAPI(prev => !prev);
+  };
+
   return (
     <div className={`${className} sm:mb-20 md:mb-10`}>
       <div className="mb-4 sm:mb-6">
@@ -220,6 +232,22 @@ export default function FlightSearch({ onSearch, className = '', initialValues =
       </div>
 
       <form onSubmit={handleSearchSubmit}>
+        {/* Add API toggle switch */}
+        <div className="flex items-center justify-end mb-4">
+          <span className={`text-xs mr-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            <FaGlobe className="inline mr-1" />
+            Use Real-time Flight API
+          </span>
+          <div 
+            className={`relative inline-block w-10 h-5 rounded-full transition-colors cursor-pointer ${useAmadeusAPI ? 'bg-emerald-500' : isDark ? 'bg-gray-600' : 'bg-gray-300'}`}
+            onClick={handleAPIToggle}
+          >
+            <span 
+              className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform ${useAmadeusAPI ? 'transform translate-x-5' : ''}`} 
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
           <div className="relative" ref={fromRef}>
             <label className={`block text-sm sm:text-base font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1 sm:mb-2`}>From</label>

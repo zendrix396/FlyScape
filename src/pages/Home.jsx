@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import FlightSearch from '../components/FlightSearch';
 import GradientText from '../components/GradientText';
 import SplitText from '../components/SplitText';
-import { searchFlights } from '../services/flightService';
+import { searchFlights, setUseAmadeusApi } from '../services/flightService';
 import { useBooking } from '../contexts/BookingContext';
 import TiltedCard from '../components/TiltedCard';
 import SpotlightCard from '../components/SpotlightCard';
@@ -38,6 +38,9 @@ export default function Home() {
     setIsSearching(true);
     
     try {
+      // Enable Amadeus API for flight search
+      setUseAmadeusApi(true);
+      
       // Get flights based on search criteria
       const flights = await searchFlights(
         searchParams.from,
