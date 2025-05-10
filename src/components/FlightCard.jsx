@@ -237,18 +237,28 @@ export default function FlightCard({
                 {flight.priceIncreased && flight.originalPrice && (
                   <div className={`text-xs sm:text-sm line-through ${isDark ? 'text-gray-500' : 'text-gray-500'} mb-1 font-medium`}>
                     <FaRupeeSign className="inline text-gray-500 text-xs mr-0.5" />
-                    {flight.originalPrice}
+                    {typeof flight.originalPrice === 'object' && flight.originalPriceFormatted 
+                      ? flight.originalPriceFormatted
+                      : flight.originalPrice}
                   </div>
                 )}
                 <div className="flex items-center">
-                  <FaRupeeSign className={flight.priceIncreased ? "text-red-500 text-sm" : isDark ? "text-emerald-400 text-sm" : "text-emerald-600 text-sm"} />
-                  <div className={`text-lg sm:text-xl font-bold ml-1 ${flight.priceIncreased ? "text-red-500" : isDark ? "text-white" : "text-gray-800"}`}>
-                    <CountUp
-                      from={price - 100} 
-                      to={price || 0} 
-                      duration={0.5} 
-                      separator=","
-                    />
+                  <div className={`text-lg sm:text-xl font-bold ${flight.priceIncreased ? "text-red-500" : isDark ? "text-white" : "text-gray-800"}`}>
+                    {flight.priceFormatted ? (
+                      // If we have a pre-formatted price, use it
+                      flight.priceFormatted
+                    ) : (
+                      // Otherwise use CountUp for animation
+                      <CountUp
+                        from={price - Math.min(100, price * 0.1)} 
+                        to={price || 0} 
+                        duration={1.2} 
+                        separator=","
+                        prefix="₹"
+                        decimals={0}
+                        className={flight.priceIncreased ? "text-red-500" : isDark ? "text-white" : "text-gray-800"}
+                      />
+                    )}
                   </div>
                 </div>
                 {flight.priceIncreased && (

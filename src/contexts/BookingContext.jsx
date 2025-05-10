@@ -219,7 +219,7 @@ export function BookingProvider({ children }) {
     const { flight, passengerName, email, phone, paymentMethod } = bookingData;
     
     // Calculate total price (including taxes)
-    const totalPrice = flight.price + Math.round(flight.price * 0.18);
+    const totalPrice = flight.price;
     
     // Check if user has enough balance
     if (paymentMethod === 'wallet' && wallet < totalPrice) {

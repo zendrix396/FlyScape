@@ -6,44 +6,86 @@ export default function CountUp({
   from = 0,
   to = 100,
   duration = 1,
-  separator = '',
+  separator = ',',
   direction = 'up',
   className = '',
+  decimals = 0,
+  prefix = '',
+  suffix = '',
+  onComplete = () => {},
 }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.5 });
-  const [count, setCount] = useState(direction === 'up' ? from : to);
+  const [count, setCount] = useState(from);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  // Reset count when "from" changes to ensure proper animation start
+  useEffect(() => {
+    setCount(from);
+  }, [from]);
+
+  // Reset animation state when "to" value changes 
+  useEffect(() => {
+    setHasAnimated(false);
+  }, [to]);
 
   useEffect(() => {
-    if (!isInView) return;
+    // Skip animation if values are the same
+    if (from === to) {
+      setCount(to);
+      setHasAnimated(true);
+      return;
+    }
+
+    // Only animate if in view and not already animated
+    if (!isInView || hasAnimated) return;
 
     let startTime;
     let animationId;
+    const startValue = direction === 'up' ? from : to;
+    const endValue = direction === 'up' ? to : from;
+
+    // Use a more sophisticated easing function for smoother animation
+    const easeOutExpo = t => (t === 1) ? 1 : 1 - Math.pow(2, -10 * t);
 
     const updateCount = (timestamp) => {
       if (!startTime) startTime = timestamp;
-      const progress = (timestamp - startTime) / (duration * 1000);
+      const elapsedTime = timestamp - startTime;
+      const progress = Math.min(elapsedTime / (duration * 1000), 1);
+      const easedProgress = easeOutExpo(progress);
+      
+      // Calculate the current value with more precision
+      const currentValue = startValue + (endValue - startValue) * easedProgress;
+      
+      setCount(currentValue);
 
       if (progress < 1) {
-        const value = direction === 'up'
-          ? from + Math.floor((to - from) * progress)
-          : to - Math.floor((to - from) * progress);
-        setCount(value);
         animationId = requestAnimationFrame(updateCount);
       } else {
-        setCount(direction === 'up' ? to : from);
+        setCount(endValue);
+        setHasAnimated(true);
+        onComplete();
       }
     };
 
     animationId = requestAnimationFrame(updateCount);
 
     return () => {
-      cancelAnimationFrame(animationId);
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
     };
-  }, [isInView, from, to, duration, direction]);
+  }, [isInView, from, to, duration, direction, hasAnimated, onComplete]);
 
   const formatNumber = (num) => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+    // Handle decimal places
+    const fixedNum = parseFloat(num).toFixed(decimals);
+    
+    // Format with separators (like commas)
+    const parts = fixedNum.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+    
+    return `${prefix}${parts.join('.')}${suffix}`;
   };
 
   return (

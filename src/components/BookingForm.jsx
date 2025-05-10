@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaUser, FaPhone, FaEnvelope, FaCreditCard, FaCalendarAlt, FaLock, FaUserPlus, FaUserMinus } from 'react-icons/fa';
 import SplitText from './SplitText';
 import SpotlightCard from './SpotlightCard';
+import CountUp from './CountUp';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -151,7 +152,7 @@ export default function BookingForm({ flight, onSubmit }) {
       }
     } else if (formData.paymentMethod === 'wallet') {
       // Calculate total price for all passengers
-      const pricePerPassenger = flight && flight.price ? flight.price + Math.round(flight.price * 0.18) : 0;
+      const pricePerPassenger = flight && flight.price ? flight.price : 0;
       const totalPrice = pricePerPassenger * passengersCount;
       
       const walletBalance = userProfile ? (userProfile.walletBalance || userProfile.wallet || 0) : 0;
@@ -179,7 +180,7 @@ export default function BookingForm({ flight, onSubmit }) {
       setIsProcessing(true);
       
       // Calculate total price for all passengers
-      const pricePerPassenger = flight && flight.price ? flight.price + Math.round(flight.price * 0.18) : 0;
+      const pricePerPassenger = flight && flight.price ? flight.price : 0;
       const totalPrice = pricePerPassenger * passengersCount;
       
       // If wallet payment, update wallet balance
@@ -206,7 +207,7 @@ export default function BookingForm({ flight, onSubmit }) {
   };
 
   // Calculate ticket price
-  const ticketPrice = flight && flight.price ? flight.price + Math.round(flight.price * 0.18) : 0;
+  const ticketPrice = flight && flight.price ? flight.price : 0;
   const totalPrice = ticketPrice * passengersCount;
 
   return (
@@ -260,7 +261,12 @@ export default function BookingForm({ flight, onSubmit }) {
                         ? 'bg-gray-700 text-gray-400' 
                         : 'bg-gray-100 text-gray-400'
                     }`}
-                    onClick={() => passengersCount > 1 && setPassengersCount(prev => prev - 1)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (passengersCount > 1) {
+                        setPassengersCount(prev => prev - 1);
+                      }
+                    }}
                     disabled={passengersCount <= 1}
                   >
                     <FaUserMinus />
@@ -273,7 +279,10 @@ export default function BookingForm({ flight, onSubmit }) {
                       ? 'bg-emerald-900/30 text-emerald-400' 
                       : 'bg-emerald-100 text-emerald-700'
                     }`}
-                    onClick={() => setPassengersCount(prev => prev + 1)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPassengersCount(prev => prev + 1);
+                    }}
                   >
                     <FaUserPlus />
                   </button>
@@ -373,7 +382,15 @@ export default function BookingForm({ flight, onSubmit }) {
               <div className={`mb-6 p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                 <div className="flex justify-between items-center">
                   <span className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Price per passenger:</span>
-                  <span className={`font-medium ${isDark ? 'text-white' : ''}`}>₹{ticketPrice}</span>
+                  <span className={`font-medium ${isDark ? 'text-white' : ''}`}>
+                    <CountUp
+                      from={ticketPrice} 
+                      to={ticketPrice} 
+                      duration={0.5} 
+                      separator=","
+                      prefix="₹"
+                    />
+                  </span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Number of passengers:</span>
@@ -382,7 +399,15 @@ export default function BookingForm({ flight, onSubmit }) {
                 <div className={`border-t my-2 pt-2 ${isDark ? 'border-gray-600' : 'border-gray-200'}`}></div>
                 <div className="flex justify-between items-center">
                   <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Total:</span>
-                  <span className={`text-lg font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>₹{totalPrice}</span>
+                  <span className={`text-lg font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                    <CountUp
+                      from={totalPrice} 
+                      to={totalPrice} 
+                      duration={0.5} 
+                      separator=","
+                      prefix="₹"
+                    />
+                  </span>
                 </div>
               </div>
 
@@ -446,15 +471,31 @@ export default function BookingForm({ flight, onSubmit }) {
               </div>
 
               {formData.paymentMethod === 'wallet' ? (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium text-gray-700 mb-2">Wallet Payment</h3>
+                <div className={`mb-6 p-4 ${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg`}>
+                  <h3 className={`font-medium ${isDark ? 'text-white' : 'text-gray-700'} mb-2`}>Wallet Payment</h3>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Available Balance:</span>
-                    <span className="font-bold text-emerald-600">₹{userProfile ? (userProfile.walletBalance || userProfile.wallet || 0).toLocaleString() : 0}</span>
+                    <span className={isDark ? 'text-gray-300' : 'text-gray-600'}>Available Balance:</span>
+                    <span className={`font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                      <CountUp
+                        from={userProfile ? (userProfile.walletBalance || userProfile.wallet || 0) : 0} 
+                        to={userProfile ? (userProfile.walletBalance || userProfile.wallet || 0) : 0} 
+                        duration={0.5} 
+                        separator=","
+                        prefix="₹"
+                      />
+                    </span>
                   </div>
                   <div className="flex justify-between items-center mt-2">
-                    <span className="text-gray-600">Total Amount:</span>
-                    <span className="font-bold">₹{totalPrice.toLocaleString()}</span>
+                    <span className={isDark ? 'text-gray-300' : 'text-gray-600'}>Total Amount:</span>
+                    <span className={`font-bold ${isDark ? 'text-white' : ''}`}>
+                      <CountUp
+                        from={totalPrice} 
+                        to={totalPrice} 
+                        duration={0.5} 
+                        separator=","
+                        prefix="₹"
+                      />
+                    </span>
                   </div>
                   
                   {formErrors.wallet && (

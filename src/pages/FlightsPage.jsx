@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FlightList from '../components/FlightList';
 import FlightSearch from '../components/FlightSearch';
-import { searchFlights } from '../services/flightService';
+import { searchFlights, saveSelectedFlight } from '../services/flightService';
 import { useBooking } from '../contexts/BookingContext';
 import { adjustFlightPrice } from '../services/flightService';
 import { useTheme } from '../contexts/ThemeContext';
@@ -158,6 +158,14 @@ export default function FlightsPage() {
         newSearchParams.date
       );
       
+      // If no results were found, show a friendly message
+      if (!results || results.length === 0) {
+        setError('No flights found for this route and date. Please try different locations or dates.');
+        setFlights([]);
+        setSearchParams(newSearchParams);
+        return;
+      }
+      
       // Process flight data for display
       const processedResults = prepareFlightsForDisplay(results);
       
@@ -188,7 +196,21 @@ export default function FlightsPage() {
       setSearchParams(newSearchParams);
     } catch (error) {
       console.error('Error searching flights:', error);
-      setError('Failed to search flights. Please try again.');
+      
+      // Set a more specific error message based on the error
+      if (error.message.includes('airport code')) {
+        setError(`Invalid airport code. Please use a valid three-letter IATA code (e.g., DEL, BOM, JFK).`);
+      } else if (error.message.includes('date')) {
+        setError('Invalid date format. Please select a valid future date.');
+      } else if (error.message.includes('Authentication')) {
+        setError('Authentication with flight service failed. Please try again later.');
+      } else {
+        setError(error.message || 'Failed to search flights. Please try again.');
+      }
+      
+      // Clear flights but keep search params for reference
+      setFlights([]);
+      setSearchParams(newSearchParams);
     } finally {
       setLoading(false);
     }
@@ -218,6 +240,16 @@ export default function FlightsPage() {
     
     // Record this click/selection for pricing purposes
     recordFlightSearch(processedFlight.id);
+    
+    // Save the selected flight to Firestore
+    try {
+      const saveResult = await saveSelectedFlight(processedFlight);
+      if (!saveResult.success) {
+        console.warn('Failed to save flight selection to database:', saveResult.error);
+      }
+    } catch (error) {
+      console.error('Error saving flight selection:', error);
+    }
     
     // Check if price should increase for this specific flight
     try {
