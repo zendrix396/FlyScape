@@ -18,6 +18,9 @@ let tokenExpiration = null;
 // EUR to INR conversion rate (approx) - can be updated or fetched from a currency API
 const EUR_TO_INR_RATE = 96;
 
+// Log for development only - remove in production
+console.log('Amadeus API environment check (key length):', import.meta.env.VITE_AMADEUS_API_KEY?.length);
+
 /**
  * Get an authentication token from Amadeus API
  */
@@ -31,7 +34,7 @@ const getAmadeusToken = async () => {
     // Request a new token
     const response = await axios.post(
       'https://api.amadeus.com/v1/security/oauth2/token',
-      'grant_type=client_credentials&client_id=illaBiXTLSV5lj9kQdwHDOemL0Ak5gjd&client_secret=ArP8VzvuRRYOcLGc',
+      `grant_type=client_credentials&client_id=${import.meta.env.VITE_AMADEUS_API_KEY}&client_secret=${import.meta.env.VITE_AMADEUS_API_SECRET}`,
       {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
